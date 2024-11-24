@@ -10,7 +10,7 @@ public class quiz2346 {
 
         int N = Integer.parseInt(br.readLine());
         Deque<Integer> deque = new ArrayDeque<>();
-        List<Integer> list = new ArrayList<>();
+        Deque<Integer> counter = new ArrayDeque<>();
         int index = 0;
         int value = 0;
 
@@ -18,32 +18,32 @@ public class quiz2346 {
         for(int i = 0; i < N; i++) {
             int M = Integer.parseInt(st.nextToken());
             deque.add(M);
-            list.add(M);
+            counter.add(i+1);
         }
 
-        //1번째 출력
-        bw.write(index + 1 + " ");
+        //1번째 출력 후 삭제
+        bw.write(counter.pollFirst() + " ");
         //value값
-        value = list.get(index);
-        //삭제
-        deque.remove();
+        value = deque.pollFirst();
 
         while(!deque.isEmpty()) {
             //이동
             if (value > 0) {
                 for(int i = 0; i < value; i++){
                     deque.addLast(deque.poll());
+                    counter.addLast(counter.poll());
                 }
                 value = deque.pollLast();
-                index = list.indexOf(value);
+                index = counter.pollLast();
             } else {
                 for(int i = 0; i < Math.abs(value); i++){
                     deque.addFirst(deque.pollLast());
+                    counter.addFirst(counter.pollLast());
                 }
                 value = deque.pollFirst();
-                index = list.indexOf(value);
+                index = counter.pollFirst();
             }
-            bw.write(index + 1 + " ");
+            bw.write(index + " ");
         }
         bw.flush();
         bw.close();
