@@ -11,66 +11,70 @@ public class quiz2346 {
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
         int N = Integer.parseInt(br.readLine());
-        List<Integer> aList = new ArrayList<>();
-        List<Integer> bList = new ArrayList<>();
+        int[] arr = new int[N];
         int index = 0;
         int value = 0;
-        int answer = 0;
+        int count = 1;
 
         StringTokenizer st = new StringTokenizer(br.readLine());
         for(int i = 0; i < N; i++) {
             int M = Integer.parseInt(st.nextToken());
-            aList.add(M);
-            bList.add(M);
+            arr[i] = M;
         }
 
         //1번째 출력
-        bw.write(answer + 1 + " ");
-        //value 저장
-        value = bList.get(index);
-        //삭제
-        bList.remove(index);
+        bw.write(index + 1 + " ");
+        //value값
+        value = arr[index];
+        //0으로 초기화
+        arr[index] = 0;
 
-        while(!bList.isEmpty()){
+        while(count < arr.length) {
             //이동
-            if(bList.size() > 1){
-                if(value > 0){
-                    if(index + value <= bList.size()-1){
-                        index = ((index-1) + value) % bList.size();
-                    } else {
-                        index = (index + value -1) % bList.size();
-                    }
-                } else {
-                    if(0<= index + value){
-                        index = index + value;
-                    } else {
-                        if(index == bList.size()){
-                            index = bList.size() + index + value;
-                        } else if (index == 0){
-                            if(Math.abs(index+value) % bList.size() == 0){
-                                index = 0;
-                            } else {
-                                index = bList.size() - (Math.abs(index+value) % bList.size());
-                            }
+            if (value > 0) {
+                for (int i = 1; i <= value; i++) {
+                    if (index + 1 <= arr.length - 1) {
+                        if (arr[index + 1] != 0) {
+                            index++;
                         } else {
-                            if(Math.abs(index+value) % bList.size() == 0){
-                                index = 0;
-                            } else {
-                                index = bList.size() - (Math.abs(index+value) % bList.size());
-                            }
+                            index++;
+                            i--;
+                        }
+                    } else {
+                        if(arr[(index + 1) % arr.length] != 0){
+                            index = (index + 1) % arr.length;
+                        } else {
+                            index = (index + 1) % arr.length;
+                            i--;
                         }
                     }
                 }
-            } else {
-                index = 0;
+            } else if (value < 0){
+                for (int i = 1; i <= Math.abs(value); i++) {
+                    if (index - 1 >= 0) {
+                        if (arr[index - 1] != 0) {
+                            index--;
+                        } else {
+                            index--;
+                            i--;
+                        }
+                    } else {
+                        if (arr[arr.length + index - 1] != 0) {
+                            index = arr.length + index - 1;
+                        } else {
+                            index = arr.length + index - 1;
+                            i--;
+                        }
+                    }
+                }
             }
-            //value값
-            value = bList.get(index);
-            //value값에 대한 aList index
-            answer = aList.indexOf(value);
-            bw.write(answer+1 + " ");
-            //삭제
-            bList.remove(index);
+            //value값 구하기
+            value = arr[index];
+            //출력
+            bw.write(index + 1 + " ");
+            //초기화
+            arr[index] = 0;
+            count ++;
         }
         bw.flush();
         bw.close();
