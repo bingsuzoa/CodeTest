@@ -32,29 +32,25 @@ public class quiz24511 {
         }
 
         Deque<Integer> deque = new ArrayDeque<>();
-        //deque에 값 넣기
-        for(int i = 0; i < N; i++){
-            deque.add(B[i]);
-        }
 
-
-        for(int i = 0; i < M; i++) {
-            int c = C[i];
-            int temp = 0;
-            for (int j = 0; j < A.length; j++) {
-                //0이면 큐
-                if (A[j] == 0) {
-                    temp = deque.pollFirst();
-                    deque.addFirst(c);
-                    deque.addLast(deque.pollFirst());
-                    c = temp;
-                //1이면 stack
-                } else {
-                    deque.addLast(deque.pollFirst());
-                }
+        //deque에 que값만 넣기
+        for(int i = 0; i < A.length; i++){
+            if(A[i] == 0){
+                deque.add(B[i]);
             }
-            bw.write(c + " ");
         }
+        if(deque.isEmpty()){
+            for(int i = 0; i < M; i++){
+                bw.write(C[i] + " ");
+            }
+        } else {
+            for(int i = 0; i < M; i++){
+                //deque 맨 앞에 수열 추가
+                deque.addFirst(C[0]);
+                bw.write(deque.pollLast() + " ");
+            }
+        }
+
         bw.flush();
         bw.close();
     }
