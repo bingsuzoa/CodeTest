@@ -25,10 +25,10 @@ public class quiz24511 {
         }
 
         int M = Integer.parseInt(br.readLine());
-        int[] C = new int[M];
+        Queue<Integer> C = new LinkedList<>();
         st = new StringTokenizer(br.readLine());
         for(int i = 0; i < M; i++){
-            C[i] = Integer.parseInt(st.nextToken());
+            C.add(Integer.parseInt(st.nextToken()));
         }
 
         Deque<Integer> deque = new ArrayDeque<>();
@@ -41,13 +41,15 @@ public class quiz24511 {
         }
         if(deque.isEmpty()){
             for(int i = 0; i < M; i++){
-                bw.write(C[i] + " ");
+                bw.write(C.poll() + " ");
             }
         } else {
             for(int i = 0; i < M; i++){
-                //deque 맨 앞에 수열 추가
-                deque.addFirst(C[0]);
-                bw.write(deque.pollLast() + " ");
+                if(deque.isEmpty()){
+                    bw.write(C.poll() + " ");
+                } else {
+                    bw.write(deque.pollLast() + " ");
+                }
             }
         }
 
