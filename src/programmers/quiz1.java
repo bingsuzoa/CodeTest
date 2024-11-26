@@ -24,6 +24,8 @@ public class quiz1 {
         Date date5 = sdf.parse("00:10");
         long tenSec = date5.getTime();
 
+        long ansTime = 0;
+
         for(int i = 0; i < commands.length; i++){
             String command = commands[i];
             if(command.equals("prev")){
@@ -32,10 +34,7 @@ public class quiz1 {
                     answer = "00:00";
                 } else {
                 //10초 초과
-                    long ansTime = cTime-tenSec;
-                    long ansSec = ansTime / 1000;
-                    long ansMin = ansTime / (1000 * 60);
-                    answer = ansMin + ":" + ansSec;
+                    ansTime = cTime - tenSec;
                 }
             } else if(command.equals("next")) {
                 //종료시간 10초
@@ -44,19 +43,17 @@ public class quiz1 {
                 }
                 //오프닝 끝난 후, 오프닝 시작까지 10초남음
                 if(cTime >= oeTime || cTime + tenSec < osTime){
-                    long ansTime = cTime+tenSec;
-                    long ansSec = ansTime / 1000;
-                    long ansMin = ansTime / (1000 * 60);
-                    answer = ansMin + ":" + ansSec;
+                    ansTime = cTime + tenSec;
                 } else {
-                    long ansTime = oeTime + tenSec;
-                    long ansSec = ansTime / 1000;
-                    long ansMin = ansTime / (1000 * 60);
-                    answer = ansMin + ":" + ansSec;
+                    ansTime = oeTime + tenSec;
                 }
 
             }
         }
+        long ansSec = (ansTime / 1000) % 60;
+        long ansMin = ansTime / (1000 * 60) % 60;
+        answer = ansMin + ":" + ansSec;
+
         return answer;
     }
 }
