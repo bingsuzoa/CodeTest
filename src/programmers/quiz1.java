@@ -2,58 +2,58 @@ package programmers;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class quiz1 {
     public String solution(String video_len, String pos, String op_start, String op_end, String[] commands) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("MM:SS");
 
-        Date date1 = sdf.parse(video_len);
-        long vLength = date1.getTime();
+       LocalTime date1 = LocalTime.of(00, Integer.parseInt(video_len.split(":")[0]), Integer.parseInt(video_len.split(":")[1]));
+       int vLength = date1.getMinute() * 60 + date1.getSecond();
 
-        Date date2 = sdf.parse(pos);
-        long cTime = date2.getTime();
+       LocalTime date2 = LocalTime.of(00, Integer.parseInt(pos.split(":")[0]), Integer.parseInt(pos.split(":")[1]));
+       int cMin = date2.getSecond();
+       int cTime = date2.getMinute() * 60 + date2.getSecond();
 
-        Date date3 = sdf.parse(op_start);
-        long osTime = date3.getTime();
+       LocalTime date3 = LocalTime.of(00, Integer.parseInt(op_start.split(":")[0]), Integer.parseInt(op_start.split(":")[1]));
+       int osTime = date3.getMinute() * 60 + date3.getSecond();
 
-        Date date4 = sdf.parse(op_end);
-        long oeTime = date4.getTime();
+       LocalTime date4 = LocalTime.of(00, Integer.parseInt(op_end.split(":")[0]), Integer.parseInt(op_end.split(":")[1]));
+       int oeTime = date4.getMinute() * 60 + date4.getSecond();
 
-        Date date5 = sdf.parse("00:10");
-        long tenSec = date5.getTime();
-
-        Date date6 = sdf.parse("00:00");
-        long sTime = date6.getTime();
+       LocalTime date5 = LocalTime.of(00,00,00);
+       int sTime = date5.getMinute() * 60 + date5.getSecond();
 
         String answer = "";
+        long tenSec = 10;
 
         for(int i = 0; i < commands.length; i++){
             String command = commands[i];
             if(command.equals("prev")){
                 //10초 이하
-                if(cTime <= tenSec){
+                if(cTime <= 10){
                     cTime = sTime;
                 } else {
                 //10초 초과
-                    cTime = cTime - tenSec;
+                    cTime = cTime + 10;
                 }
             } else if(command.equals("next")) {
                 //종료시간 10초
-                if(cTime + tenSec >= vLength){
+                if(cTime + 10 >= vLength){
                     cTime = vLength;
                 }
                 //오프닝 끝난 후, 오프닝 시작까지 10초남음
-                if(cTime >= oeTime || cTime + tenSec < osTime){
-                    cTime = cTime + tenSec;
+                if(cTime >= oeTime || cTime + 10 < osTime){
+                    cTime = cTime + 10;
                 } else {
-                    cTime = oeTime + tenSec;
+                    cTime = oeTime + 10;
                 }
 
             }
         }
-        int ansSec = (int)(cTime / 1000) % 60;
-        int ansMin = (int)(cTime / (1000 * 60)) % 60;
+        int ansSec = (int)(cTime % 60);
+        int ansMin = (int)(cTime / 60);
         answer = ansMin + ":" + ansSec;
 
         return answer;
