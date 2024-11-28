@@ -27,44 +27,21 @@ public class Quiz2 {
             }
         }
         //이진트리로 줄여가야한다.
-        int minLevel = 0;
+        int minLevel = 1;
         while (true) {
-            if(result <= limit) {
-                result = 0;
-                level = (minLevel + level) / 2;
-                for (int i = 0; i < diffs.length; i++) {
-                    int diff = diffs[i];
-                    if (level >= diff) {
-                        result += times[i];
-                    } else {
-                        result += (times[i] + ((long) (times[i] + times[i - 1]) * (diff - level)));
-                    }
-                }
-                if (result <= limit){
-                    result = 0;
-                    level = level -1;
-                    for (int i = 0; i < diffs.length; i++) {
-                        int diff = diffs[i];
-                        if (level >= diff) {
-                            result += times[i];
-                        } else {
-                            result += (times[i] + ((long) (times[i] + times[i - 1]) * (diff - level)));
-                        }
-                    }
-                    if(result > limit){
-                        level = level + 1;
-                        answer = level;
-                        break;
-                    } else {
-                        maxLevel = level;
-                        continue;
-                    }
+            result = 0;
+            level = (minLevel + maxLevel) / 2;
+            for (int i = 0; i < diffs.length; i++) {
+                int diff = diffs[i];
+                if (level >= diff) {
+                    result += times[i];
+                } else {
+                    result += (times[i] + ((long) (times[i] + times[i - 1]) * (diff - level)));
                 }
             }
-            minLevel = level;
-            if(result > limit){
+            if (result <= limit){
                 result = 0;
-                level = (minLevel + maxLevel) /2;
+                level = level -1;
                 for (int i = 0; i < diffs.length; i++) {
                     int diff = diffs[i];
                     if (level >= diff) {
@@ -73,34 +50,44 @@ public class Quiz2 {
                         result += (times[i] + ((long) (times[i] + times[i - 1]) * (diff - level)));
                     }
                 }
-                if (result <= limit){
-                    result = 0;
-                    level = level -1;
-                    for (int i = 0; i < diffs.length; i++) {
-                        int diff = diffs[i];
-                        if (level >= diff) {
-                            result += times[i];
-                        } else {
-                            result += (times[i] + ((long) (times[i] + times[i - 1]) * (diff - level)));
-                        }
-                    }
-                    if(result > limit){
-                        level = level + 1;
+                if(result > limit){
+                    level = level + 1;
+                    answer = level;
+                    break;
+                } else {
+                    if(level == 1){
                         answer = level;
                         break;
                     } else {
                         maxLevel = level;
-                        continue;
                     }
+                }
+
+            } else {
+                result = 0;
+                level = level + 1;
+                for (int i = 0; i < diffs.length; i++) {
+                    int diff = diffs[i];
+                    if (level >= diff) {
+                        result += times[i];
+                    } else {
+                        result += (times[i] + ((long) (times[i] + times[i - 1]) * (diff - level)));
+                    }
+                }
+                if(result <= limit){
+                    answer = level;
+                    break;
+                } else {
+                    minLevel = level;
                 }
             }
         }
         return answer;
     }
     public static void main(String[] args){
-        int[] diffs = {1,99999,100000,99995};
-        int[] times = {9999,9001,9999,9001};
-        long limit = 3456789012L;
+        int[] diffs = {1,1,3};
+        int[] times = {1,2,3};
+        long limit = 50;
 
         Quiz2 test = new Quiz2();
         System.out.println(test.solution(diffs, times, limit));
