@@ -32,10 +32,10 @@ public class Quiz4 {
         Quiz4 quiz4 = new Quiz4();
         List<String> xList = new ArrayList<>(quiz4.checkX(expressions));
         List<String> aList = getList(expressions);
-        int max = quiz4.getMax(expressions) + 1;
-        List<Integer> formation = quiz4.getFormation(aList, max, 9);
+        int max = quiz4.getMax(expressions);
+        List<Integer> JBList = getJB(max, aList);
+        List<String> answerList = getAnswer(xList, JBList);
 
-        List<String> answerList = quiz4.getAnswer(xList, formation);
         String[] answer = new String[answerList.size()];
         for(int i = 0; i < answer.length; i++){
             answer[i] = answerList.get(i);
@@ -43,54 +43,37 @@ public class Quiz4 {
         return answer;
     }
 
-    public List<String> getAnswer(List<String> xList, List<Integer> formation){
+    public List<String> getAnswer(List<String> xList, List<Integer> JBList){
         List<String> answer = new ArrayList<>();
-        for(int i = 0; i < formation.size(); i++){
-            for(String exp : xList){
-                exp = exp.replaceAll("[^0-9]", "");
-                StringTokenizer st = new StringTokenizer(exp);
-                int num1 = Integer.parseInt(st.nextToken());
-                int num2 = Integer.parseInt(st.nextToken());
-                String string = st.nextToken();
+        String answerString;
 
-                if(answer.size() == 0) {
-                    if (exp.contains(Operatior.PLUS.getSign())) {
-                        int x = ((num1 / i) * 10) + (num1 % i);
-                        int y = ((num2 / i) * 10) + (num2 % i);
-                        int temp = Operatior.PLUS.apply(x, y);
-                        temp = (temp / i) * 10 + (temp % i);
-                        string = x + " " + Operatior.PLUS.getSign() + " " + y + " = " + temp;
-                        answer.add(string);
-                    } else {
-                        int x = ((num1 / i) * 10) + (num1 % i);
-                        int y = ((num2 / i) * 10) + (num2 % i);
-                        int temp = Operatior.MINUS.apply(x, y);
-                        temp = (temp / i) * 10 + (temp % i);
-                        string = x + " " + Operatior.MINUS.getSign() + " " + y + " = " + temp;
-                        answer.add(string);
-                    }
+        if(JBList.size() == 1 || answer.isEmpty()){
+            for(String exp : xList){
+                int x = split(exp).get(0);
+                int y = split(exp).get(1);
+                int result = calculate(JBList.get(0), exp);
+                if(exp.contains("+")) {
+                    answerString = x + " + " + y + " = " +result;
+                    answer.add(answerString);
                 } else {
-                    if (exp.contains(Operatior.PLUS.getSign())) {
-                        int x = ((num1 / i) * 10) + (num1 % i);
-                        int y = ((num2 / i) * 10) + (num2 % i);
-                        int temp = Operatior.PLUS.apply(x, y);
-                        temp = (temp / i) * 10 + (temp % i);
-                        if(answer.get(answer.size()-1).equals(temp)){
-                            continue;
+                    answerString = x + " - " + y + " = " +result;
+                    answer.add(answerString);
+                }
+            }
+        } else {
+            for (int j = 0; j < JBList.size(); j++) {
+                for (int i = 0; i < xList.size(); i++) {
+                    int x = split(xList.get(i)).get(0);
+                    int y = split(xList.get(i)).get(1);
+                    int z = split(xList.get(i)).get(2);
+                    int result = calculate(JBList.get(j), xList.get(i));
+                    if (z == result) {
+                        if (xList.get(i).contains("+")) {
+                            answerString = x + " + " + y + " = ?";
+                            answer.add(answerString);
                         } else {
-                            string = x + " " + Operatior.PLUS.getSign() + " " + y + " = ?";
-                            answer.set(answer.size()-1, string);
-                        }
-                    } else {
-                        int x = ((num1 / i) * 10) + (num1 % i);
-                        int y = ((num2 / i) * 10) + (num2 % i);
-                        int temp = Operatior.MINUS.apply(x, y);
-                        temp = (temp / i) * 10 + (temp % i);
-                        if(answer.get(answer.size()-1).equals(temp)){
-                            continue;
-                        } else {
-                            string = x + " " + Operatior.PLUS.getSign() + " " + y + " = ?";
-                            answer.set(answer.size()-1, string);
+                            answerString = x + " - " + y + " = ?";
+                            answer.add(answerString);
                         }
                     }
                 }
@@ -98,75 +81,77 @@ public class Quiz4 {
         }
         return answer;
     }
-
-
-
-    public List<Integer> getFormation(List<String> list, int max, int number){
-        List<Boolean> comparision = new ArrayList<>();
-        List<Integer> formation = new ArrayList<>();
-        for(int i = max; i <= number; i++) {
-            for (String exp : list) {
-                exp = exp.replaceAll("[^0-9]", "");
-                StringTokenizer st = new StringTokenizer(exp);
-                int num1 = Integer.parseInt(st.nextToken());
-                int num2 = Integer.parseInt(st.nextToken());
-                int num3 = Integer.parseInt(st.nextToken());
-
-                if (exp.contains(Operatior.PLUS.getSign())) {
-                    int x = ((num1 / i) * 10) + (num1 % i);
-                    int y = ((num2 / i) * 10) + (num2 % i);
-                    int z = ((num3 / i) * 10) + (num3 % i);
-                    int temp = Operatior.PLUS.apply(x, y);
-                    int result = (temp / i) * 10 + (temp % i);
-                    if (z == result) {
-                        formation.add(i);
-                        comparision.add(true);
+    public List<Integer> getJB(int max, List<String> alist){
+        List<Integer> JBList = new ArrayList<>();
+        max = max + 1;
+        int count = 0;
+        for(int i = max; i <= 9; i++){
+            for(String exp : alist){
+                int result = calculate(i, exp);
+                int z = split(exp).get(2);
+                if(result == z){
+                    if(count == 3){
+                        break;
+                    } else {
+                        count++;
+                        JBList.add(i);
                     }
                 } else {
-                    int x = ((num1 / i) * 10) + (num1 % i);
-                    int y = ((num2 / i) * 10) + (num2 % i);
-                    int z = ((num3 / i) * 10) + (num3 % i);
-                    int temp = Operatior.MINUS.apply(x, y);
-                    int result = (temp / i) * 10 + (temp % i);
-                    if (z == result) {
-                        formation.add(i);
-                        comparision.add(true);
-                    }
-                }
-                if(comparision.size() >= 3 && !comparision.contains(false)){
                     break;
                 }
             }
         }
-        return formation;
+        return JBList;
+    }
+
+    public int calculate(int n, String exp){
+        int result = 0;
+        int n1 = split(exp).get(0);
+        int n2 = split(exp).get(1);
+        int x = ((n1 / 10) * n) + (n1 % 10);
+        int y = ((n2 / 10) * n) + (n2 % 10);
+        if(exp.contains(Operatior.PLUS.getSign())) result = Operatior.PLUS.apply(x,y);
+        if(exp.contains(Operatior.MINUS.getSign())) result = Operatior.MINUS.apply(x,y);
+        result = ((result / n) * 10) + (result % 10);
+        return result;
     }
 
     public int getMax(String[] expressions){
-        List<Integer> aList = new ArrayList<>();
+        List<Integer> aList;
         int max = 0;
-
         for(String exp : expressions){
-            exp = exp.replaceAll("[^0-9]", "");
-            StringTokenizer st = new StringTokenizer(exp);
-            int num1 = Integer.parseInt(st.nextToken());
-            aList.add(num1);
-            int num2 = Integer.parseInt(st.nextToken());
-            aList.add(num2);
-            int num3 = 0;
-            String temp = st.nextToken();
-            if(!temp.equals("X")){
-                num3 = Integer.parseInt(temp);
-                aList.add(num3);
-            }
-            for(int num : aList){
-                max = num / 10;
-                int remainder = num % 10;
-                if(max < remainder){
-                    max = remainder;
-                }
-            }
+          aList = split(exp);
+          for(int i : aList){
+              max = aList.get(i) / 100;
+              int second = aList.get(i) / 10;
+              if(max < second) max = second;
+
+              int last = aList.get(i) % 10;
+              if(max < last) max = last;
+          }
         }
         return max;
+    }
+
+    public List<Integer> split(String expression){
+        List<Integer> list = new ArrayList<>();
+        expression = expression.replaceAll("[^0-9]", "");
+        if(!expression.contains("X")){
+            StringTokenizer st = new StringTokenizer(expression);
+            int num1 = Integer.parseInt(st.nextToken());
+            list.add(num1);
+            int num2 = Integer.parseInt(st.nextToken());
+            list.add(num2);
+            int num3 = Integer.parseInt(st.nextToken());
+            list.add(num3);
+        } else {
+            StringTokenizer st = new StringTokenizer(expression);
+            int num1 = Integer.parseInt(st.nextToken());
+            list.add(num1);
+            int num2 = Integer.parseInt(st.nextToken());
+            list.add(num2);
+        }
+        return list;
     }
 
     public List<String> checkX(String[] expressions){
