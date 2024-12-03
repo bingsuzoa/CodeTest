@@ -29,10 +29,9 @@ enum Operatior {
 public class Quiz4 {
 
     public String[] solution(String[] expressions) {
-        Quiz4 quiz4 = new Quiz4();
-        List<String> xList = new ArrayList<>(quiz4.checkX(expressions));
+        List<String> xList = new ArrayList<>(checkX(expressions));
         List<String> aList = getList(expressions);
-        int max = quiz4.getMax(expressions);
+        int max = getMax(expressions);
         List<Integer> JBList = getJB(max, aList);
         List<String> answerList = getAnswer(xList, JBList);
 
@@ -135,22 +134,11 @@ public class Quiz4 {
 
     public List<Integer> split(String expression){
         List<Integer> list = new ArrayList<>();
-        expression = expression.replaceAll("[^0-9]", "");
-        if(!expression.contains("X")){
+        expression = expression.replaceAll("[^0-9]", " ");
             StringTokenizer st = new StringTokenizer(expression);
-            int num1 = Integer.parseInt(st.nextToken());
-            list.add(num1);
-            int num2 = Integer.parseInt(st.nextToken());
-            list.add(num2);
-            int num3 = Integer.parseInt(st.nextToken());
-            list.add(num3);
-        } else {
-            StringTokenizer st = new StringTokenizer(expression);
-            int num1 = Integer.parseInt(st.nextToken());
-            list.add(num1);
-            int num2 = Integer.parseInt(st.nextToken());
-            list.add(num2);
-        }
+            while(st.hasMoreTokens()){
+                list.add(Integer.parseInt(st.nextToken()));
+            }
         return list;
     }
 
@@ -173,4 +161,17 @@ public class Quiz4 {
         }
         return aList;
     }
+
+    public static void main(String[] args){
+        String[] expressions = {"14 + 3 = 17", "13 - 6 = X", "51 - 5 = 44"};
+        Quiz4 quiz4 = new Quiz4();
+//        String[] answer = quiz4.solution(expressions);
+        for(String ans : expressions){
+            for(int i : quiz4.split(ans)){
+                System.out.println(i);
+            }
+        }
+
+    }
 }
+
