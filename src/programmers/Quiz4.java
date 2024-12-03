@@ -59,20 +59,25 @@ public class Quiz4 {
                     answer.add(answerString);
                 }
             }
-        } else {
-            for (int j = 0; j < JBList.size(); j++) {
-                for (int i = 0; i < xList.size(); i++) {
-                    int x = split(xList.get(i)).get(0);
-                    int y = split(xList.get(i)).get(1);
-                    int z = split(xList.get(i)).get(2);
-                    int result = calculate(JBList.get(j), xList.get(i));
-                    if (z == result) {
-                        if (xList.get(i).contains("+")) {
-                            answerString = x + " + " + y + " = ?";
-                            answer.add(answerString);
-                        } else {
-                            answerString = x + " - " + y + " = ?";
-                            answer.add(answerString);
+        }
+        if(!answer.isEmpty()){
+            for (int j = 1; j < JBList.size(); j++) {
+                for (int i = 0; i < answer.size(); i++) {
+                    if(answer.get(i).contains("?")){
+                        continue;
+                    } else {
+                        int x = split(answer.get(i)).get(0);
+                        int y = split(answer.get(i)).get(1);
+                        int z = split(answer.get(i)).get(2);
+                        int result = calculate(JBList.get(j), xList.get(i));
+                        if (z != result) {
+                            if (xList.get(i).contains("+")) {
+                                answerString = x + " + " + y + " = ? ";
+                                answer.set(i, answerString);
+                            } else {
+                                answerString = x + " - " + y + " = ? ";
+                                answer.add(i, answerString);
+                            }
                         }
                     }
                 }
@@ -82,21 +87,20 @@ public class Quiz4 {
     }
     public List<Integer> getJB(int max, List<String> alist){
         List<Integer> JBList = new ArrayList<>();
-        max = max + 1;
+        if(max != 9) max = max + 1;
         int count = 0;
         for(int i = max; i <= 9; i++){
             for(String exp : alist){
                 int result = calculate(i, exp);
                 int z = split(exp).get(2);
-                if(result == z){
-                    if(count == 3){
-                        break;
-                    } else {
-                        count++;
+                if(result != z) break;
+                else {
+                    count ++;
+                    if(count == 3 || count == alist.size()){
                         JBList.add(i);
+                        count = 0;
+                        break;
                     }
-                } else {
-                    break;
                 }
             }
         }
@@ -111,7 +115,7 @@ public class Quiz4 {
         int y = ((n2 / 10) * n) + (n2 % 10);
         if(exp.contains(Operatior.PLUS.getSign())) result = Operatior.PLUS.apply(x,y);
         if(exp.contains(Operatior.MINUS.getSign())) result = Operatior.MINUS.apply(x,y);
-        result = ((result / n) * 10) + (result % 10);
+        result = ((result / n) * 10) + (result % n);
         return result;
     }
 
@@ -120,12 +124,14 @@ public class Quiz4 {
         int max = 0;
         for(String exp : expressions){
           aList = split(exp);
-          for(int i : aList){
-              max = aList.get(i) / 100;
-              int second = aList.get(i) / 10;
+          for(int i = 0; i < aList.size(); i++){
+              int first = aList.get(i) / 100;
+              if(max < first) max = first;
+
+              int second = (aList.get(i) - (first * 100)) / 10;
               if(max < second) max = second;
 
-              int last = aList.get(i) % 10;
+              int last = (aList.get(i) - (first * 100)) % 10;
               if(max < last) max = last;
           }
         }
@@ -163,15 +169,12 @@ public class Quiz4 {
     }
 
     public static void main(String[] args){
-        String[] expressions = {"14 + 3 = 17", "13 - 6 = X", "51 - 5 = 44"};
+        String[] expressions = {"10 - 2 = X", "30 + 31 = 101", "3 + 3 = X", "33 + 33 = X"};
         Quiz4 quiz4 = new Quiz4();
-//        String[] answer = quiz4.solution(expressions);
-        for(String ans : expressions){
-            for(int i : quiz4.split(ans)){
-                System.out.println(i);
-            }
+        String[] answer = quiz4.solution(expressions);
+        for(String ans : answer){
+            System.out.println(ans);
         }
-
     }
 }
 
