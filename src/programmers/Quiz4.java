@@ -72,10 +72,10 @@ public class Quiz4 {
                         int result = calculate(JBList.get(j), xList.get(i));
                         if (z != result) {
                             if (xList.get(i).contains("+")) {
-                                answerString = x + " + " + y + " = ? ";
+                                answerString = x + " + " + y + " = ?";
                                 answer.set(i, answerString);
                             } else {
-                                answerString = x + " - " + y + " = ? ";
+                                answerString = x + " - " + y + " = ?";
                                 answer.add(i, answerString);
                             }
                         }
@@ -115,7 +115,30 @@ public class Quiz4 {
         int y = ((n2 / 10) * n) + (n2 % 10);
         if(exp.contains(Operatior.PLUS.getSign())) result = Operatior.PLUS.apply(x,y);
         if(exp.contains(Operatior.MINUS.getSign())) result = Operatior.MINUS.apply(x,y);
-        result = ((result / n) * 10) + (result % n);
+        result = calculateJB(n, result);
+        return result;
+    }
+
+    public int calculateJB(int jb, int result){
+        int count = 0;
+        List<Integer> list = new ArrayList<>();
+        int m = 1;
+        while(Math.pow(jb, count) <= result){
+            count++;
+        }
+        count--;
+        for(int i = count; i >= 0; i--){
+            while(m * Math.pow(jb, i) <= result){
+                m++;
+            }
+            m--;
+            list.add(m);
+            result = result - m * (int)Math.pow(jb, i);
+            m = 0;
+        }
+        for(int i = 0; i <list.size(); i++){
+            result += list.get(i) * (int)Math.pow(10, list.size()-1-i);
+        }
         return result;
     }
 
@@ -169,7 +192,7 @@ public class Quiz4 {
     }
 
     public static void main(String[] args){
-        String[] expressions = {"10 - 2 = X", "30 + 31 = 101", "3 + 3 = X", "33 + 33 = X"};
+        String[] expressions = {"1 + 1 = 2", "1 + 3 = 4", "1 + 5 = X", "1 + 2 = X"};
         Quiz4 quiz4 = new Quiz4();
         String[] answer = quiz4.solution(expressions);
         for(String ans : answer){
