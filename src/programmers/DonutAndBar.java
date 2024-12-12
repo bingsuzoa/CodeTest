@@ -5,8 +5,8 @@ public class DonutAndBar {
     public int[] solution(int[][] edges){
         HashMap<Integer, Set<Integer>> graph = findMultiValue(edges);
         HashMap<Integer, Set<Integer>> totalMap = makeTotalMap(edges);
-
         int topKey = findTopKey(graph, totalMap);
+
         return findGroup(graph, totalMap, topKey);
     }
 
@@ -53,6 +53,7 @@ public class DonutAndBar {
         }
         return graph;
     }
+
     public int findTopKey(HashMap<Integer, Set<Integer>> graph, HashMap<Integer, Set<Integer>> totalMap){
         int topKey = 0;
         Iterator<Integer> keys = graph.keySet().iterator();
@@ -78,34 +79,42 @@ public class DonutAndBar {
             }}
         return topKey;}
 
+
     public int[] findGroup(HashMap<Integer, Set<Integer>> graph
-            , HashMap<Integer, Set<Integer>> totalMap
-            , int topKey){
+                        , HashMap<Integer, Set<Integer>> totalMap
+                        , int topKey){
         int barCount = 0;
-        int eightCount = 0;
-        int donutCount = 0;
+        int eightCount;
+        int donutCount;
 
-        int count = 0;
-
-        Set<Integer> tempSet = new HashSet<>();
         Set<Integer> valueSet = graph.get(topKey);
+        Set<Integer> tempSet = new HashSet<>();
         for(int value : valueSet){
             tempSet.clear();
-            count = 0;
-            while(!tempSet.contains(value)){
-                tempSet.add(value);
-                count ++;
-                if(totalMap.containsKey(value)) {
-                    Set<Integer> subValueSet = totalMap.get(value);
-                    if(subValueSet.size() == 2) eightCount++;
-                    else {
-                        for(int subValue : subValueSet) value = subValue;
+            if(!graph.containsKey(value)){
+                if(!totalMap.containsKey(value)){
+                    barCount++;
+                } else {
+                    int tempKey = value;
+                    while(!tempSet.contains(tempKey)){
+                        tempSet.add(tempKey);
+                        if(totalMap.containsKey(tempKey)){
+                            if(totalMap.get(tempKey).size() == 2) break;
+                            for(int tempValue : totalMap.get(tempKey)){
+                                tempKey = tempValue;
+                            }
+                        } else {
+                            barCount++;
+                            break;
+                        }
                     }
-                } else barCount++;
+                }
             }
-            //간선의 개수 = 정점의 개수 && 나가는 선이 존재(막대graph가능성 배제) && 8자그래프 가능성 배제
-            if(tempSet.size() == count && totalMap.containsKey(value) && totalMap.get(value).size() == 1) donutCount++;
         }
+        eightCount = graph.size()-1;
+        donutCount = graph.get(topKey).size() - eightCount - barCount;
+
+
         int[] answer = {topKey, donutCount, barCount, eightCount};
         return answer;
     }
