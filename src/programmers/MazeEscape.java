@@ -8,7 +8,8 @@ public class MazeEscape {
     private static int[][] graph;
     private static int m;
     private static int n;
-    private static int count = 0;
+    private static int[] dx = {-1,1,0,0};
+    private static int[] dy = {0,0,-1,1};
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -36,34 +37,33 @@ public class MazeEscape {
     public int solution(int[][] graph) {
         m = graph.length;
         n = graph[0].length;
-        int answer = move(0,0);
-        return answer;
+        int[][] newGraph = move(graph,0,0);
+        return newGraph[m-1][n-1];
     }
 
 
-    public int move(int x, int y) {
+    public int[][] move(int[][] graph, int x, int y) {
         Stack<int[]> stack = new Stack<>();
         stack.add(new int[] {x,y});
 
-        while(true) {
+
+        while(!stack.isEmpty()) {
             int[] temp = stack.pop();
             x = temp[0];
             y = temp[1];
-            if(x <= -1 || y <= -1 || x >= m || y >= n || graph[x][y] == 0) {
-                continue;
-            }
-            else if(x == m-1 && y == n-1) {
-                count++;
-                break;
-            }
-            else {
-                count++;
-                stack.add(new int[] {x-1 , y});
-                stack.add(new int[] {x, y-1});
-                stack.add(new int[] {x, y+1});
-                stack.add(new int[] {x+1 , y});
+            for (int i = 0; i < 4; i++) {
+                int nx = x + dx[i];
+                int ny = y + dy[i];
+
+                if (nx < 0 || ny < 0 || nx >= m || ny >= n || graph[nx][ny] == 0) {
+                    continue;
+                }
+                if (graph[nx][ny] == 1) {
+                    graph[nx][ny] = graph[x][y] + 1;
+                    stack.add(new int[]{nx, ny});
+                }
             }
         }
-        return count;
+        return graph;
     }
 }
