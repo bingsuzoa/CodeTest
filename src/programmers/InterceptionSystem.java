@@ -10,7 +10,7 @@ public class InterceptionSystem {
     private static int maxValue;
 
     public static void main(String[] args) {
-        int[][] targets = {{1,2}};
+        int[][] targets = {{1,5},{3,20},{4,15},{5,8},{6,18}};
         InterceptionSystem test = new InterceptionSystem();
         System.out.println(test.solution(targets));
     }
@@ -43,9 +43,10 @@ public class InterceptionSystem {
             int[] result = getRange(x,y);
             x = result[0];
             maxValue = result[1];
+            index = result[2];
             y = map.get(x).get(0);
 
-            if(maxValue == max) {
+            if(maxValue == max && index == list.size() - 1) {
                 answer++;
                 break;
             } else {
@@ -75,10 +76,11 @@ public class InterceptionSystem {
         for(int i = index + 1; i < list.size(); i++) {
             if(list.get(i) >= min_y) {
                 max_x = list.get(i);
+                index = i;
                 break;
             }
         }
-        int[] range = {max_x, maxValue};
+        int[] range = {max_x, maxValue, index};
         return range;
     }
     public int getMax(int[][] targets) {
