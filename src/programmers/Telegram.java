@@ -1,9 +1,11 @@
 package programmers;
 
 import java.io.*;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class Telegram {
+    private static int cityCount = 0;
+    private static int totalTime = 0;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -16,52 +18,81 @@ public class Telegram {
         int routeTotal = Integer.parseInt(st.nextToken());
         int city = Integer.parseInt(st.nextToken());
 
-        int[][] graph = new int[routeTotal][3];
-        for(int i = 0; i < graph.length; i++) {
-            String input2 = br.readLine();
-            st = new StringTokenizer(input2);
-            graph[i][0] = Integer.parseInt(st.nextToken());
-            graph[i][1] = Integer.parseInt(st.nextToken());
-            graph[i][2] = Integer.parseInt(st.nextToken());
-        }
+        int[][] graph = new int[cityTotal + 1][cityTotal + 1];
+        boolean[] visited = new boolean[cityTotal + 1];
 
-        int[][] route = new int[cityTotal + 1][cityTotal + 1];
-
-        for(int i = 0; i < route.length; i++) {
-            for(int j = 0; j < route[i].length; j++) {
-                route[i][j] = 1001;
+        for(int i = 0; i <graph.length; i++) {
+            for(int j = 0; j < graph.length; j++) {
+                graph[i][j] = 1001;
             }
         }
 
-        for(int i = 0; i < route.length; i++) {
-            route[i][i] = 0;
+        List<List<Integer>> list = new ArrayList<>(cityTotal + 1);
+        for(int i = 0; i < cityTotal + 1; i++) {
+            list.add(new ArrayList<>());
         }
 
-        for(int i = 0; i < graph.length; i++) {
-            int x = graph[i][0];
-            int y = graph[i][1];
-            int time = graph[i][2];
-            route[x][y] = time;
+        for(int i = 0; i < routeTotal; i++) {
+            String input2 = br.readLine();
+            st = new StringTokenizer(input2);
+            int x = Integer.parseInt(st.nextToken());
+            int y = Integer.parseInt(st.nextToken());
+            int time = Integer.parseInt(st.nextToken());
+            graph[x][y] = time;
+            list.get(x).add(y);
         }
 
-        for(int i = 1; i <= cityTotal; i++) {
-            for(int a = 1; a <= cityTotal; a++) {
-                for(int b = 1; b <= cityTotal; b++) {
-                    route[a][b] = Math.min(route[a][b], route[a][i] + route[i][b]);
+        PriorityQueue<MinTimeOfRoute> pq  = new PriorityQueue<>(1, new MinTimeOfRouteComparator());
+        pq.add(new MinTimeOfRoute(0, city));
+        while(!pq.isEmpty()) {
+            MinTimeOfRoute nowRoute = pq.poll();
+            int now_time  = nowRoute.time;
+            int node = nowRoute.node;
+            visited[node] = true;
+
+            for(int i = 0; i < list.get(node).size(); i++) {
+                int y = list.get(node).get(i);
+                if(!visited[y]) {
+                    visited[y] = true;
+                    int cost = now_time + graph[node][y];
+                    if(cost < graph[city][y]) {
+                        graph[node][y] = cost;
+                    }
+                    pq.add(new MinTimeOfRoute(graph[node][y], y));
                 }
             }
         }
-
-        int max_city = 0;
-        int max_time = 0;
-        for(int i = 1; i <= cityTotal; i++) {
-            if(route[city][i] > 0 && route[city][i] < 1001) {
-                max_city++;
-                max_time = Math.max(max_time, route[city][i]);
+        for(int i = 0; i < graph[city].length; i++ ){
+            if(graph[city][i] < 1001) {
+                cityCount ++;
+                totalTime = Math.max(totalTime, graph[city][i]);
             }
         }
-
-        bw.write(max_city + " " + max_time);
+        bw.write(cityCount + " " + totalTime);
         bw.close();
+
     }
 }
+
+class MinTimeOfRoute {
+    int time;
+    int node;
+
+    public MinTimeOfRoute(int time, int node) {
+        this.time = time;
+        this.node = node;
+    }
+}
+
+class MinTimeOfRouteComparator implements Comparator<MinTimeOfRoute> {
+
+    @Override
+    public int compare(MinTimeOfRoute o1, MinTimeOfRoute o2) {
+        if(o1.time == o2.time) {
+            return o1.node - o2.node;
+        } else {
+            return o1.time - o2.time;
+        }
+    }
+}
+
