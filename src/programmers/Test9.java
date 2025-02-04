@@ -3,9 +3,11 @@ package programmers;
 
 import java.util.*;
 
+
 public class Test9 {
+
     public static void main(String[] args) {
-        String[][] plans = {{"korean", "11:40", "30"}, {"english", "12:10", "20"}, {"math", "12:30", "40"}};
+        String[][] plans = {{"korean", "12:20", "40"}, {"english", "12:40", "50"}, {"math", "14:00", "60"}};
         Test9 test = new Test9();
         String[] solution = test.solution(plans);
         for(String value : solution) {
@@ -13,65 +15,95 @@ public class Test9 {
         }
     }
     public String[] solution(String[][] plans) {
-        int[][] parsePlans = parsePlans(plans);
-        Queue<Integer> subject = new LinkedList<>();
-        List<String> endSubject = new ArrayList<>();
-        String[] answer = new String[plans.length];
-
-        for(int i = 0; i < parsePlans.length; i++) {
-            subject.add(i);
+        List<String> answerList = new ArrayList<>();
+        int[][] startEndSubject = parsePlans(plans);
+        List<Order> startTimeList = new ArrayList<>(1440);
+        for(int i = 0; i < startEndSubject.length; i++) {
+            Order startOrder = new Order(i, true);
+            Order endOrder = new Order(i, false);
+            startTimeList.add(startEndSubject[i][0], startOrder);
+            startTimeList.add(startEndSubject[i][1], endOrder);
         }
 
-        Stack<Integer> ongoingTasks = new Stack<>();
-        while (!subject.isEmpty()) {
-            int index =  subject.poll();
-            int subjectIndex = parsePlans[index][0];
-            int end = parsePlans[index][2];
-            if(index == parsePlans.length -1) {
-                endSubject.add(plans[subjectIndex][0]);
+        Stack<Integer> startTimeStack = new Stack<>();
+        boolean stackOpenKey = false;
+        int possibleMove = 0;
+        int move = 0;
+        int order = 0;
+        for(int i = 0; i < startTimeList.size(); i++) {
+            if(stackOpenKey) {
+                while(startTimeList.get(possibleMove) == null || !startTimeList.get(possibleMove).isStartOrArrive()) {
+                    move = startTimeStack.pop();
+                    order = startTimeList.get(move).getOrder();
+                    move++;
+                    if(startTimeList.get(move).getOrder() == order) {
+                        answerList.add(findSubject(plans, startEndSubject, move));
+                    }
+                    possibleMove++;
+                }
+                move--;
+                Order newOrder = new Order(order,true);
+                startTimeList.add(move, newOrder);
+                startTimeStack.add(move);
             }
-            for (int i = index + 1; i < parsePlans.length; i++) {
-                if (parsePlans[i][1] < end) {
-                    ongoingTasks.add(subjectIndex);
-                    break;
-                } else {
-                    endSubject.add(plans[subjectIndex][0]);
-                    break;
+            else if(startTimeList.get(i).isStartOrArrive()) {
+                startTimeStack.add(i);
+            }
+            else {
+                if(startTimeList.get(i).getOrder() == startTimeList.get(startTimeStack.peek()).getOrder()) {
+                    startTimeStack.pop();
+                    answerList.add(plans[i][0]);
+                    stackOpenKey = true;
+                    possibleMove = i + 1;
                 }
             }
         }
-        while (!ongoingTasks.isEmpty()) {
-            endSubject.add(plans[ongoingTasks.pop()][0]);
-        }
-
-        for (int i = 0; i < plans.length; i++) {
-            answer[i] = endSubject.get(i);
-        }
-
+        String[] answer = answerList.stream().toArray(String[]::new);
         return answer;
     }
 
     public int[][] parsePlans(String[][] plans) {
-        int[][] hourToMinute = new int[plans.length][3];
+        int[][] hourToMinute = new int[plans.length][2];
         for (int i = 0; i < plans.length; i++) {
-            hourToMinute[i][0] = i;
-            hourToMinute[i][1] = hourToMinute(plans[i][1], plans[i][2])[0];
-            hourToMinute[i][2] = hourToMinute(plans[i][1], plans[i][2])[1];
+            hourToMinute[i][0] = hourToMinute(plans[i][1]); //시작시간
+            hourToMinute[i][1] = hourToMinute[i][0] + hourToMinute(plans[i][2]); //종료시간
         }
-        Arrays.sort(hourToMinute, new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                return o1[1] - o2[1];
-            }
-        });
         return hourToMinute;
     }
 
-    public int[] hourToMinute(String startTime, String duration) {
-        String[] splitTime = startTime.split(":");
-        int[] startAndEndTime = new int[2];
-        startAndEndTime[0] = Integer.parseInt(splitTime[0]) * 60 + Integer.parseInt(splitTime[1]);
-        startAndEndTime[1] = startAndEndTime[0] + Integer.parseInt(duration);
-        return startAndEndTime;
+    public String findSubject(String[][] plans, int[][] startEndSubject, int move) {
+        int index = Arrays.stream(startEndSubject)
+                .filter(row -> row[1] == move)
+                .mapToInt(row -> Arrays.asList(startEndSubject).indexOf(row))
+                .findFirst()
+                .orElse(-1);
+        return plans[index][0];
+    }
+
+    public int hourToMinute(String time) {
+        int stringToInt;
+        if(time.length() > 2) {
+            String[] splitTime = time.split(":");
+            stringToInt = Integer.parseInt(splitTime[0]) * 60 + Integer.parseInt(splitTime[1]);
+        } else {
+            stringToInt = Integer.parseInt(time);
+        }
+        return stringToInt;
+    }
+}
+
+class Order {
+    int order;
+    boolean startOrArrive;
+
+    Order(int order, boolean startOrArrive) {
+        this.order = order;
+        this.startOrArrive = startOrArrive;
+    }
+    public int getOrder() {
+        return this.order;
+    }
+    public boolean isStartOrArrive() {
+        return this.startOrArrive;
     }
 }
