@@ -7,7 +7,7 @@ import java.util.*;
 public class Test9 {
 
     public static void main(String[] args) {
-        String[][] plans = {{"korean", "12:20", "40"}, {"english", "12:40", "50"}, {"math", "14:00", "60"}};
+        String[][] plans = {{"science", "12:40", "50"}, {"music", "12:20", "40"}, {"history", "14:00", "30"}, {"computer", "12:30", "100"}};
         Test9 test = new Test9();
         String[] solution = test.solution(plans);
         for(String value : solution) {
@@ -15,95 +15,79 @@ public class Test9 {
         }
     }
     public String[] solution(String[][] plans) {
+        Order[] orders = (Order[])changePlansToOrders(plans);
         List<String> answerList = new ArrayList<>();
-        int[][] startEndSubject = parsePlans(plans);
-        List<Order> startTimeList = new ArrayList<>(1440);
-        for(int i = 0; i < startEndSubject.length; i++) {
-            Order startOrder = new Order(i, true);
-            Order endOrder = new Order(i, false);
-            startTimeList.add(startEndSubject[i][0], startOrder);
-            startTimeList.add(startEndSubject[i][1], endOrder);
-        }
-
-        Stack<Integer> startTimeStack = new Stack<>();
-        boolean stackOpenKey = false;
-        int possibleMove = 0;
-        int move = 0;
-        int order = 0;
-        for(int i = 0; i < startTimeList.size(); i++) {
-            if(stackOpenKey) {
-                while(startTimeList.get(possibleMove) == null || !startTimeList.get(possibleMove).isStartOrArrive()) {
-                    move = startTimeStack.pop();
-                    order = startTimeList.get(move).getOrder();
-                    move++;
-                    if(startTimeList.get(move).getOrder() == order) {
-                        answerList.add(findSubject(plans, startEndSubject, move));
+        Stack<Order> stack = new Stack<>();
+        for(int i = 0; i < orders.length -1; i++) {
+            int necessaryTime = orders[i].duration;
+            int realTakenTime = orders[i + 1].startTime - orders[i].startTime;
+            int remainTime;
+            if(realTakenTime >= necessaryTime) {
+                answerList.add(orders[i].getSubject(plans));
+                remainTime = realTakenTime - necessaryTime;
+                while(remainTime > 0 && !stack.isEmpty()) {
+                    Order subTask = stack.pop();
+                    int remainTimeOfSubTask = subTask.duration;
+                    if(remainTime >= remainTimeOfSubTask) {
+                        answerList.add(subTask.getSubject(plans));
+                        remainTime -= remainTimeOfSubTask;
+                    } else {
+                        remainTimeOfSubTask -= remainTime;
+                        remainTime -= remainTimeOfSubTask;
+                        stack.add(new Order(subTask.subjectIndex, subTask.startTime, remainTimeOfSubTask));
                     }
-                    possibleMove++;
                 }
-                move--;
-                Order newOrder = new Order(order,true);
-                startTimeList.add(move, newOrder);
-                startTimeStack.add(move);
-            }
-            else if(startTimeList.get(i).isStartOrArrive()) {
-                startTimeStack.add(i);
-            }
-            else {
-                if(startTimeList.get(i).getOrder() == startTimeList.get(startTimeStack.peek()).getOrder()) {
-                    startTimeStack.pop();
-                    answerList.add(plans[i][0]);
-                    stackOpenKey = true;
-                    possibleMove = i + 1;
-                }
+            } else {
+                necessaryTime -= realTakenTime;
+                stack.add(new Order(orders[i].subjectIndex, orders[i].startTime, necessaryTime));
             }
         }
-        String[] answer = answerList.stream().toArray(String[]::new);
+        answerList.add(orders[orders.length -1].getSubject(plans));
+        while(!stack.isEmpty()) {
+            answerList.add(stack.pop().getSubject(plans));
+        }
+        String[] answer = new String[plans.length];
+        for(int i = 0; i < answerList.size(); i++) {
+            answer[i] = answerList.get(i);
+        }
         return answer;
     }
 
-    public int[][] parsePlans(String[][] plans) {
-        int[][] hourToMinute = new int[plans.length][2];
-        for (int i = 0; i < plans.length; i++) {
-            hourToMinute[i][0] = hourToMinute(plans[i][1]); //시작시간
-            hourToMinute[i][1] = hourToMinute[i][0] + hourToMinute(plans[i][2]); //종료시간
+    public Object[] changePlansToOrders(String[][] plans) {
+        Order[] orders = new Order[plans.length];
+        for(int i = 0; i < plans.length; i++) {
+            orders[i] = new Order(i, changeHourToMinute(plans[i][1]), changeHourToMinute(plans[i][2]));
         }
-        return hourToMinute;
+        Arrays.sort(orders, new Comparator<Order>() {
+            @Override
+            public int compare(Order o1, Order o2) {
+                return o1.startTime - o2.startTime;
+            }
+        });
+        return orders;
     }
 
-    public String findSubject(String[][] plans, int[][] startEndSubject, int move) {
-        int index = Arrays.stream(startEndSubject)
-                .filter(row -> row[1] == move)
-                .mapToInt(row -> Arrays.asList(startEndSubject).indexOf(row))
-                .findFirst()
-                .orElse(-1);
-        return plans[index][0];
-    }
-
-    public int hourToMinute(String time) {
-        int stringToInt;
-        if(time.length() > 2) {
-            String[] splitTime = time.split(":");
-            stringToInt = Integer.parseInt(splitTime[0]) * 60 + Integer.parseInt(splitTime[1]);
-        } else {
-            stringToInt = Integer.parseInt(time);
+    public int changeHourToMinute(String time) {
+        if(time.contains(":")) {
+            return Integer.parseInt(time.split(":")[0]) * 60 + Integer.parseInt(time.split(":")[1]);
         }
-        return stringToInt;
+        return Integer.parseInt(time);
     }
 }
 
 class Order {
-    int order;
-    boolean startOrArrive;
+    int subjectIndex;
+    int startTime;
+    int duration;
 
-    Order(int order, boolean startOrArrive) {
-        this.order = order;
-        this.startOrArrive = startOrArrive;
+    Order(int subjectIndex, int startTime, int duration) {
+        this.subjectIndex = subjectIndex;
+        this.startTime = startTime;
+        this.duration = duration;
     }
-    public int getOrder() {
-        return this.order;
+
+    public String getSubject(String[][] plans) {
+        return plans[subjectIndex][0];
     }
-    public boolean isStartOrArrive() {
-        return this.startOrArrive;
-    }
+
 }
