@@ -33,7 +33,7 @@ public class Test9 {
                         remainTime -= remainTimeOfSubTask;
                     } else {
                         remainTimeOfSubTask -= remainTime;
-                        remainTime -= remainTimeOfSubTask;
+                        remainTime = 0;
                         stack.add(new Order(subTask.subjectIndex, subTask.startTime, remainTimeOfSubTask));
                     }
                 }
