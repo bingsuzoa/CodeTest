@@ -12,7 +12,7 @@ public class Test250206 {
     }
 
     public int solution(int[] picks, String[] minerals) {
-        int answer = 0;
+        int answer = Integer.MAX_VALUE;
         int[][] tired = new int[3][3];
 
         for(int i = 0; i < tired.length; i++) {
@@ -24,18 +24,26 @@ public class Test250206 {
         tired[2][0] = 25;
         tired[2][1] = 5;
 
-        Queue<Integer> changedMinerals = stringToInt(minerals);
-        for(int i = 0; i < picks.length; i++) {
-            int count = picks[i] * 5;
-            while(count > 0 && !changedMinerals.isEmpty()) {
-                answer += tired[i][changedMinerals.poll()];
-                count--;
+        Queue<int[][]> changedPicks = makeRandomPicks(picks);
+        while(!changedPicks.isEmpty()) {
+            Queue<Integer> changedMinerals = stringToInt(minerals);
+            int[][] newPicks = changedPicks.poll();
+            int sum = 0;
+            for(int i = 0; i < newPicks.length; i++) {
+                int count = newPicks[i][1] * 5;
+                while(count > 0 && !changedMinerals.isEmpty()) {
+                    sum += tired[newPicks[i][0]][changedMinerals.poll()];
+                    count--;
+                }
+            }
+            if(answer > sum) {
+                answer = sum;
             }
         }
         return answer;
     }
 
-    public Queue stringToInt(String[] minerals) {
+    public Queue<Integer> stringToInt(String[] minerals) {
         Queue<Integer> changeMinerals = new LinkedList<>();
 
         for(String mineral : minerals) {
@@ -50,5 +58,22 @@ public class Test250206 {
             }
         }
         return changeMinerals;
+    }
+
+    public Queue<int[][]> makeRandomPicks(int[] picks) {
+        Queue<int[][]> queue = new LinkedList<>();
+
+        int[] diamond = {0, picks[0]};
+        int[] iron = {1, picks[1]};
+        int[] stone = {2, picks[2]};
+
+        queue.add(new int[][] {diamond, iron, stone});
+        queue.add(new int[][] {diamond, stone, iron});
+        queue.add(new int[][] {iron, stone, diamond});
+        queue.add(new int[][] {iron, diamond, stone});
+        queue.add(new int[][] {stone, diamond, iron});
+        queue.add(new int[][] {stone, iron, diamond});
+
+        return queue;
     }
 }
