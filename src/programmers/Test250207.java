@@ -31,7 +31,7 @@ public class Test250207 {
             }
         }
         Queue<Node> queue = new LinkedList<>();
-        queue.add(new Node(0,0, 1));
+        queue.add(new Node(0,0));
 
         int[] dx = {1, -1, 0, 0};
         int[] dy = {0, 0, 1, -1};
@@ -39,15 +39,17 @@ public class Test250207 {
             Node node = queue.poll();
             int x = node.x;
             int y = node.y;
-            int value = node.value;
-            if (x >= M || x <= -1 || y >= N || y <= -1 || graph[x][y] != 1) {
-                continue;
-            }
 
-            graph[x][y] = value;
+            for(int i = 0; i < 4; i++) {
+                int nx = x + dx[i];
+                int ny = y + dy[i];
 
-            for(int i = 0; i < dx.length; i++) {
-                queue.add(new Node(x + dx[i], y+ dy[i], graph[x][y]+1));
+                if (nx >= M || nx <= -1 || ny >= N || ny <= -1 || graph[nx][ny] != 1) {
+                    continue;
+                }
+
+                graph[nx][ny] = graph[x][y] + 1;
+                queue.add(new Node(nx, ny));
             }
         }
 
@@ -60,12 +62,10 @@ public class Test250207 {
 class Node {
     int x;
     int y;
-    int value;
 
-    Node(int x, int y, int value) {
+    Node(int x, int y) {
         this.x = x;
         this.y = y;
-        this.value = value;
     }
 
 }
