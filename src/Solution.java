@@ -1,24 +1,44 @@
+
+import java.io.*;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
+import java.util.StringTokenizer;
 
 public class Solution {
     static int m, n;
-    static Queue<Node> queue = new LinkedList<>();
-    static int min = Integer.MAX_VALUE;
+    static int[][] graph;
+    static int[] dx = {-1,0,1};
+    static int[] dy = {1,1,1};
+    static int max = 0;
+    static Stack<Node> stack = new Stack<>();
 
-    public static void main(String[] args) {
-        String[] board = {"...D..R", ".D.G...", "....D.D", "D....D.", "..D...."};
+    public static void main(String[] args) throws IOException {
         Solution test = new Solution();
-        System.out.println(test.solution(board));
-    }
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+        StringTokenizer st;
 
-    public int solution(String[] board) {
-        char[][] graph = getBoard(board);
-        boolean[][] visited = new boolean[m][n];
-        queue.add(new Node(0, n-1, 0, visited));
+        String input = br.readLine();
+        st = new StringTokenizer(input);
+        m = Integer.parseInt(st.nextToken());
+        n = Integer.parseInt(st.nextToken());
+        graph = new int[m][n];
 
-        while(!queue.isEmpty()) {
-            Node node = queue.poll();
+        String input2 = br.readLine();
+        st = new StringTokenizer(input2);
+        while(st.hasMoreTokens()) {
+            for(int i = 0; i < m; i++) {
+                for(int j = 0; j < n; j++) {
+                    graph[i][j] = Integer.parseInt(st.nextToken());
+                }
+            }
+        }
+        for(int i = 0; i < m; i++) {
+            stack.add(new Node(i,0,0));
+        }
+        while(!stack.isEmpty()) {
+            Node node = stack.pop();
             int x = node.x;
             int y = node.y;
             int sum = node.sum;
@@ -26,128 +46,30 @@ public class Solution {
             if(x >= m || y >= n || x < 0 || y < 0) {
                 continue;
             }
-            if(graph[x][y] == 'G') {
-                min = Math.min(min, sum);
-                break;
-            }
+            
+            test.find(x, y, sum);
+        }
 
-            go(graph, node, 0);
-            go(graph, node, 1);
-            go(graph, node, 2);
-            go(graph, node, 3);
-        }
-        
-        if(min == Integer.MAX_VALUE) {
-            return -1;
-        } else {
-            return min;
-        }
+        System.out.println(max);
     }
 
-    public void go(char[][] graph, Node node, int index) {
-        int x = node.x;
-        int y = node.y;
-        int sum = node.sum;
-        boolean[][] visited = new boolean[m][n];
+    public void find(int i, int j, int sum) {
+        sum += graph[i][j];
+        for(int k = 0; k < 3; k++) {
+            stack.add(new Node(i+dx[k], j+dy[k], sum));
+        }
+        max = Math.max(sum, max);
 
-        for(int i = 0; i < m; i++) {
-            for(int j = 0; j < n; j++) {
-                visited[i][j] = node.visited[i][j];
-            }
-        }
-
-        visited[x][y] = true;
-
-        if(index == 2) {
-            for(int i = y + 1; i <= n-1; i++) {
-                int ny = i;
-                if(visited[x][ny]) {
-                    break;
-                }
-                visited[x][ny] = true;
-                if(graph[x][ny] == 'D') {
-                    queue.add(new Node(x, ny-1, sum+1, visited));
-                    break;
-                }
-                if(ny == n-1) {
-                    queue.add(new Node(x, ny, sum+1, visited));
-                }
-            }
-        }
-        if(index == 3) {
-            for(int i = y - 1; i >= 0; i--) {
-                int ny = i;
-                if(visited[x][ny]) {
-                    break;
-                }
-                visited[x][ny] = true;
-                if(graph[x][ny] == 'D') {
-                    queue.add(new Node(x, ny+1, sum+1, visited));
-                    break;
-                }
-                if(ny == 0) {
-                    queue.add(new Node(x, ny, sum+1, visited));
-                }
-            }
-        }
-        if(index == 0) {
-            for(int i = x + 1; i <= m-1; i++) {
-                int nx = i;
-                if(visited[nx][y]) {
-                    break;
-                }
-                visited[nx][y] = true;
-                if(graph[nx][y] == 'D') {
-                    queue.add(new Node(nx-1, y, sum+1, visited));
-                    break;
-                }
-                if(nx == m-1) {
-                    queue.add(new Node(nx, y, sum+1, visited));
-                }
-            }
-        }
-        if(index == 1) {
-            for(int i = x - 1; i >= 0; i--) {
-                int nx = i;
-                if(visited[nx][y]) {
-                    break;
-                }
-                visited[nx][y] = true;
-                if(graph[nx][y] == 'D') {
-                    queue.add(new Node(nx+1, y, sum+1, visited));
-                    break;
-
-                }
-                if(nx == 0) {
-                    queue.add(new Node(nx, y, sum+1, visited));
-                }
-            }
-        }
-    }
-
-    public char[][] getBoard(String[] board) {
-        m = board.length;
-        n = board[0].length();
-        char[][] newBoard = new char[m][n];
-        for(int i = 0; i < m; i++) {
-            for(int j = 0; j < n; j++) {
-                newBoard[i][j] = board[i].charAt(j);
-            }
-        }
-        return newBoard;
     }
 }
-
 class Node {
     int x;
     int y;
     int sum;
-    boolean[][] visited;
 
-    Node(int x, int y, int sum, boolean[][] visited) {
+    Node(int x, int y, int sum) {
         this.x = x;
         this.y = y;
         this.sum = sum;
-        this.visited = visited;
     }
 }
