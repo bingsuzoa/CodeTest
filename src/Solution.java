@@ -1,30 +1,21 @@
-
 import java.io.*;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
+import java.util.Arrays;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class Solution {
-    static int m, n;
-    static int[][] graph;
-    static int[] dx = {-1,0,1};
-    static int[] dy = {1,1,1};
-    static int max = 0;
-    static Stack<Node> stack = new Stack<>();
 
     public static void main(String[] args) throws IOException {
-        Solution test = new Solution();
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st;
 
         String input = br.readLine();
         st = new StringTokenizer(input);
-        m = Integer.parseInt(st.nextToken());
-        n = Integer.parseInt(st.nextToken());
-        graph = new int[m][n];
+        int m = Integer.parseInt(st.nextToken());
+        int n = Integer.parseInt(st.nextToken());
 
+        int[][] graph = new int[m][n];
+        Node[][] f = new Node[m][n];
         String input2 = br.readLine();
         st = new StringTokenizer(input2);
         while(st.hasMoreTokens()) {
@@ -34,42 +25,63 @@ public class Solution {
                 }
             }
         }
-        for(int i = 0; i < m; i++) {
-            stack.add(new Node(i,0,0));
-        }
-        while(!stack.isEmpty()) {
-            Node node = stack.pop();
-            int x = node.x;
-            int y = node.y;
-            int sum = node.sum;
-
-            if(x >= m || y >= n || x < 0 || y < 0) {
-                continue;
+        for(int x = 0; x < m; x++) {
+            f[x][0] = new Node(x, 0);
+            for(int i = 1; i < n; i++) {
+                Node node = f[x][i-1];
+                if(node.x == 0) {
+                    int max = Math.max(graph[node.x][node.y+1], graph[node.x+1][node.y+1]);
+                    if(graph[node.x][node.y+1] == max) {
+                        f[x][i] = new Node(node.x, node.y+1);
+                    }
+                    if(graph[node.x+1][node.y+1] == max) {
+                        f[x][i] = new Node(node.x+1, node.y+1);
+                    }
+                }
+                else if(node.x == m-1) {
+                    int max = Math.max(graph[node.x][node.y+1], graph[node.x-1][node.y+1]);
+                    if(graph[node.x][node.y+1] == max) {
+                        f[x][i] = new Node(node.x, node.y+1);
+                    }
+                    if(graph[node.x-1][node.y+1] == max) {
+                        f[x][i] = new Node(node.x-1, node.y+1);
+                    }
+                }
+                else {
+                    int max = graph[node.x][node.y+1];
+                    max = Math.max(max, graph[node.x+1][node.y+1]);
+                    max = Math.max(max, graph[node.x-1][node.y+1]);
+                    if(graph[node.x][node.y+1] == max) {
+                        f[x][i] = new Node(node.x, node.y+1);
+                    }
+                    if(graph[node.x+1][node.y+1] == max) {
+                        f[x][i] = new Node(node.x+1, node.y+1);
+                    }
+                    if(graph[node.x-1][node.y+1] == max) {
+                        f[x][i] = new Node(node.x-1, node.y+1);
+                    }
+                }
             }
-            
-            test.find(x, y, sum);
         }
 
+        int max = 0;
+        for(int i = 0; i < m; i++) {
+            int sum = 0;
+            for(int j = 0; j < n; j++) {
+                Node node = f[i][j];
+                sum += graph[node.x][node.y];
+            }
+            max = Math.max(max, sum);
+        }
         System.out.println(max);
-    }
-
-    public void find(int i, int j, int sum) {
-        sum += graph[i][j];
-        for(int k = 0; k < 3; k++) {
-            stack.add(new Node(i+dx[k], j+dy[k], sum));
-        }
-        max = Math.max(sum, max);
-
     }
 }
 class Node {
     int x;
     int y;
-    int sum;
 
-    Node(int x, int y, int sum) {
+    Node(int x, int y) {
         this.x = x;
         this.y = y;
-        this.sum = sum;
     }
 }
