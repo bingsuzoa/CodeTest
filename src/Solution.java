@@ -1,150 +1,82 @@
 import java.io.*;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 
 
 public class Solution {
-    static int m,n;
-    static char[][] graph;
-    static int min = Integer.MAX_VALUE;
-    static Queue<Node> que = new LinkedList<>();
 
-    public static void main(String[] args) throws IOException {
-        String[] board = {".D.R", "....", ".G..", "...D"};
+    public static void main(String[] args) {
         Solution test = new Solution();
-        System.out.println(test.solution(board));
-    }
+        int[][] input = {{1,2,2},{1,3,3},{1,4,1},{1,5,10},{2,4,2}, {3,4,1},{3,5,1},{4,5,3},{3,5,10}, {3,1,8},{1,4,2},{5,1,7}
+                        ,{3,4,2},{5,2,4}};
+        int[][] graph = test.getGraph(input);
+        Stack<Node> stack = test.getStack(graph);
 
-    public int solution(String[] board) {
-        m = board.length;
-        n = board[0].length();
-        graph = getBoard(board);
-
-        int[][] visited = new int[m][n];
-        for(int i = 0; i < m; i++) {
-            for(int j = 0; j < n; j++) {
-                visited[i][j] = -1;
-            }
-        }
-
-        que.add(new Node(0, n-1, 0, visited));
-        while(!que.isEmpty()) {
-            Node node = que.poll();
+        while(!stack.isEmpty()) {
+            Node node = stack.pop();
             int x = node.x;
             int y = node.y;
-            int sum = node.sum;
-            if(x >= m || y >= n || x < 0 || y < 0) {
-                continue;
+
+            for(int i = 1; i < graph[0].length; i++) {
+                if(x == i)  {
+                    graph[x][i] = 0;
+                }
+                if(graph[y][i] == 100001) {
+                    continue;
+                }
+                graph[x][i] = Math.min(graph[x][i], graph[x][y] + graph[y][i]);
             }
-            if(graph[x][y] == 'G') {
-                min = Math.min(min, sum);
+        }
+
+        for(int i = 1; i < graph.length; i++) {
+            for(int j = 1; j < graph[0].length; j++) {
+                System.out.print(graph[i][j] + " ");
+            }
+            System.out.println();
+        }
+
+    }
+
+    public int[][] getGraph(int[][] input) {
+        int[][] graph = new int[6][6];
+
+        for(int i = 0; i < graph.length; i++) {
+            for(int j = 0; j < graph[0].length; j++) {
+                graph[i][j] = 100001;
+            }
+        }
+        for(int i = 0; i < input.length; i++) {
+            int x = input[i][0];
+            int y = input[i][1];
+            int value = input[i][2];
+            if(graph[x][y] == 0) {
+                graph[x][y] = value;
             } else {
-                for(int i = 0; i < 4; i++) {
-                    go(x, y, i, node.visited, sum+1);
-                }
-            }
-        }
-        if(min == Integer.MAX_VALUE) {
-            return -1;
-        } else {
-            return min;
-        }
-    }
-
-    public void go(int x, int y, int index, int[][] visited, int sum) {
-        int[][] newVisited = new int[m][n];
-        for(int i = 0; i < m; i++) {
-            for(int j = 0; j < n; j++) {
-                newVisited[i][j] = visited[i][j];
-            }
-        }
-        if(index == 0) {
-            for(int i = x+1; i < m; i++) {
-                if(newVisited[i][y] == index || newVisited[i][y] == 1 || graph[i][y] == 'R') {
-                    break;
-                }
-                newVisited[i][y] = index;
-                if(graph[i][y] == 'D') {
-                    que.add(new Node(i-1, y, sum, newVisited));
-                    break;
-                }
-                if(i == m-1) {
-                    que.add(new Node(i, y, sum, newVisited));
-                    break;
-                }
-            }
-        }
-        if(index == 1) {
-            for(int i = x-1; i >= 0; i--) {
-                if(newVisited[i][y] == index || newVisited[i][y] == 0 || graph[i][y] == 'R') {
-                    break;
-                }
-                newVisited[i][y] = index;
-                if(graph[i][y] == 'D') {
-                    que.add(new Node(i+1, y, sum, newVisited));
-                    break;
-                }
-                if(i == 0) {
-                    que.add(new Node(i, y, sum, newVisited));
-                    break;
-                }
-            }
-        }
-        if(index == 2) {
-            for(int i = y+1; i < n; i++) {
-                if(newVisited[x][i] == index || newVisited[x][i] == 3 || graph[x][i] == 'R') {
-                    break;
-                }
-                newVisited[x][i] = index;
-                if(graph[x][i] == 'D') {
-                    que.add(new Node(x, i-1, sum, newVisited));
-                    break;
-                }
-                if(i == n-1) {
-                    que.add(new Node(x, i, sum, newVisited));
-                    break;
-                }
-            }
-        }
-        if(index == 3) {
-            for(int i = y-1; i >= 0; i--) {
-                if(newVisited[x][i] == index || newVisited[x][i] == 2  || graph[x][i] == 'R') {
-                    break;
-                }
-                newVisited[x][i] = index;
-                if(graph[x][i] == 'D') {
-                    que.add(new Node(x, i+1, sum, newVisited));
-                    break;
-                }
-                if(i == 0) {
-                    que.add(new Node(x, i, sum, newVisited));
-                    break;
-                }
-            }
-        }
-    }
-
-    public char[][] getBoard(String[] board) {
-        char[][] graph = new char[m][n];
-        for(int i = 0; i < m; i++) {
-            for(int j = 0; j < n; j++) {
-                graph[i][j] = board[i].charAt(j);
+                graph[x][y] = Math.min(graph[x][y], value);
             }
         }
         return graph;
     }
-}
 
+    public Stack<Node> getStack(int[][] graph) {
+        Stack<Node> stack = new Stack<>();
+        for(int i = 0; i < graph.length; i++) {
+            for(int j = 0; j < graph[0].length; j++) {
+                if(graph[i][j] != 100001) {
+                    stack.add(new Node(i,j));
+                }
+            }
+        }
+        return stack;
+    }
+}
 class Node {
     int x;
     int y;
-    int sum;
-    int[][] visited;
 
-    Node(int x, int y, int sum, int[][] visited) {
+    Node(int x, int y) {
         this.x = x;
         this.y = y;
-        this.sum = sum;
-        this.visited = visited;
     }
 }
