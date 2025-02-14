@@ -1,79 +1,124 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class Solution {
+    static int m, n;
+    static char[][] graph;
+    static boolean[][] visited;
+    static int min = Integer.MAX_VALUE;
+    static Queue<Node> queue = new LinkedList<>();
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st;
+    public static void main(String[] args) {
+        String[] board = {"...D..R", ".D.G...", "....D.D", "D....D.", "..D...."};
+        Solution test = new Solution();
+        System.out.println(test.solution(board));
+    }
 
-        String input = br.readLine();
-        st = new StringTokenizer(input);
-        int c = Integer.parseInt(st.nextToken());
-        int r = Integer.parseInt(st.nextToken());
-        int s = Integer.parseInt(st.nextToken());
+    public int solution(String[] board) {
+        graph = getBoard(board);
+        visited = new boolean[m][n];
 
-        List<ArrayList<Node>> graph = new ArrayList<>();
-        for(int i = 0; i <= c; i++) {
-            graph.add(new ArrayList<>());
-        }
+        queue.add(new Node(0, n - 1, 0));
 
-        for(int i = 0; i < r; i++) {
-            String input2 = br.readLine();
-            st = new StringTokenizer(input2);
-            int start = Integer.parseInt(st.nextToken());
-            int end = Integer.parseInt(st.nextToken());
-            int count = Integer.parseInt(st.nextToken());
-            graph.get(start).add(new Node(end,count));
-        }
+        while (!queue.isEmpty()) {
+            Node node = queue.poll();
+            int x = node.x;
+            int y = node.y;
+            int sum = node.sum;
 
-        int[] city = new int[c+1];
-        for(int i = 0; i < city.length; i++) {
-            city[i] = Integer.MAX_VALUE;
-        }
+            if (x >= m || y >= n || x < 0 || y < 0) {
+                continue;
+            }
+            if (graph[x][y] == 'G') {
+                min = Math.min(min, sum);
+                break;
+            }
+            if(visited[x][y]) {
+                continue;
+            }
+            visited[x][y] = true;
 
-        city[s] = 0;
-        PriorityQueue<Node> pq = new PriorityQueue<>();
-        pq.add(new Node(s, 0));
-
-        while(!pq.isEmpty()) {
-            Node node = pq.poll();
-            int index = node.index;
-            int distance = node.distance;
-
-            for(int i = 0; i < graph.get(index).size(); i++) {
-                Node subNode = graph.get(index).get(i);
-                city[subNode.index] = Math.min(city[subNode.index], distance + subNode.distance);
-                pq.add(new Node(subNode.index, subNode.distance));
+            for (int i = 0; i < 4; i++) {
+                go(x, y, sum + 1, i);
             }
         }
+        if (min == Integer.MAX_VALUE) {
+            return -1;
+        } else {
+            return min;
+        }
+    }
 
-        int maxCount = 0;
-        int maxCity = 0;
-        for(int i = 0; i < city.length; i++) {
-            if(city[i] != Integer.MAX_VALUE) {
-                maxCount = Math.max(maxCount, city[i]);
-                maxCity++;
+    public void go(int x, int y, int sum, int index) {
+        if (index == 0) {
+            for (int i = x + 1; i < m; i++) {
+                if (graph[i][y] == 'D') {
+                    queue.add(new Node(i - 1, y, sum));
+                    break;
+                }
+                if(i == m-1) {
+                    queue.add(new Node(i, y, sum));
+                }
             }
         }
-        System.out.println(maxCity-1 + " " + maxCount);
+        if (index == 1) {
+            for (int i = x - 1; i >= 0; i--) {
+                if (graph[i][y] == 'D') {
+                    queue.add(new Node(i + 1, y, sum));
+                    break;
+                }
+                if(i == 0) {
+                    queue.add(new Node(0, y, sum));
+                }
+            }
+        }
+        if (index == 2) {
+            for (int i = y + 1; i < n; i++) {
+                if (graph[x][i] == 'D') {
+                    queue.add(new Node(x, i - 1, sum));
+                    break;
+                }
+                if(i == n-1) {
+                    queue.add(new Node(x, n - 1, sum));
+                }
+            }
+        }
+        if (index == 3) {
+            for (int i = y - 1; i >= 0; i--) {
+                if (graph[x][i] == 'D') {
+                    queue.add(new Node(x, i + 1, sum));
+                    break;
+                }
+                if(i == 0) {
+                    queue.add(new Node(x, 0, sum));
+                }
+            }
+        }
+    }
+
+    public char[][] getBoard(String[] board) {
+        m = board.length;
+        n = board[0].length();
+        char[][] graph = new char[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                graph[i][j] = board[i].charAt(j);
+            }
+        }
+        return graph;
+    }
+
+
+    class Node {
+        int x;
+        int y;
+        int sum;
+
+        Node(int x, int y, int sum) {
+            this.x = x;
+            this.y = y;
+            this.sum = sum;
+        }
+
     }
 }
-
-class Node implements Comparable<Node> {
-    int index;
-    int distance;
-
-    Node(int index, int distance) {
-        this.index = index;
-        this.distance = distance;
-    }
-
-    @Override
-    public int compareTo(Node other) {
-        return this.distance - other.distance;
-    }
-}
-
