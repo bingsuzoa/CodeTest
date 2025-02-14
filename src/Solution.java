@@ -2,38 +2,29 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class Solution {
-    static int[][] graph = {{0,1,0,1,1}, {1,0,1,1,0},{0,1,0,0,0},{1,1,0,0,0},{1,0,0,0,0}};
-    static int[] plan = {2,3,4,3};
+    static int[][] graph = {{},{0, 1, 0, 1, 1}, {1, 0, 1, 1, 0}, {0, 1, 0, 0, 0}, {1, 1, 0, 0, 0}, {1, 0, 0, 0, 0}};
+    static int[] plan = {2, 3, 4, 3};
 
     public static void main(String[] args) {
-        Queue<Node> queue = new LinkedList<>();
+        Solution test = new Solution();
+        int[] parent = new int[6];
+        for(int i = 0; i < 6; i++) {
+            parent[i] = i;
+        }
 
-        for(int i = 0; i < graph.length; i++) {
-            for(int j = 0; j < graph[0].length; j++) {
-                if(graph[i][j] == 1) {
-                    queue.add(new Node(i,j));
+        for(int i = 1; i < parent.length; i++) {
+            int index = parent[i];
+
+            for(int j = 1; j < graph[index].length; j++) {
+                if(graph[index][j] != 0) {
+                    parent = test.union(parent, index, j);
                 }
             }
         }
 
-        while (!queue.isEmpty()) {
-            Node node = queue.poll();
-            int x = node.x;
-            int y = node.y;
-
-            for(int i = 0; i < graph[y].length; i++) {
-                if(x == i) continue;
-                if(graph[x][i] != 0) continue;
-
-                graph[x][i] = graph[x][y] + graph[y][i];
-            }
-        }
-
         boolean possible = true;
-        for(int i = 0; i < plan.length-1; i++) {
-            int start = plan[i];
-            int end = plan[i+1];
-            if(graph[start][end] == 0) {
+        for(int i = 0; i < plan.length - 1; i++) {
+            if(parent[plan[i]] != parent[plan[i+1]]) {
                 possible = false;
             }
         }
@@ -43,14 +34,23 @@ public class Solution {
             System.out.println("No");
         }
     }
-}
 
-class Node {
-    int x;
-    int y;
+    public int[] union(int[] parent, int x, int y) {
+        x = findParent(parent, x);
+        y = findParent(parent, y);
 
-    Node(int x, int y) {
-        this.x = x;
-        this.y = y;
+        if(x < y) {
+            parent[y] = x;
+        } else {
+            parent[x] = y;
+        }
+        return parent;
+    }
+
+    public int findParent(int[] parent, int x) {
+        if(parent[x] != x) {
+            findParent(parent, parent[x]);
+        }
+        return parent[x];
     }
 }
