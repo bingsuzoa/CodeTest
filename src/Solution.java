@@ -2,129 +2,46 @@ import java.io.*;
 import java.util.*;
 
 public class Solution {
-    static int m, n;
-    static char[][] graph;
-    static boolean[][] visited;
-    static int min = Integer.MAX_VALUE;
-    static Queue<Node> queue = new LinkedList<>();
 
-    public static void main(String[] args) {
-        String[] board = {"...D..R", ".D.G...", "....D.D", "D....D.", "..D...."};
-        Solution test = new Solution();
-        System.out.println(test.solution(board));
-    }
-
-    public int solution(String[] board) {
-        graph = getBoard(board);
-        visited = new boolean[m][n];
-
-        for(int i = 0; i < board.length; i++) {
-            for(int j = 0; j < board[i].length(); j++) {
-                if(board[i].charAt(j) == 'R') {
-                    queue.add(new Node(i, j, 0));
-                }
-            }
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);
+        int g = sc.nextInt();
+        boolean[] occupied = new boolean[g+1];
+        int p = sc.nextInt();
+        int[] order = new int[p];
+        for(int i = 0; i < order.length; i++) {
+            order[i] = sc.nextInt();
+        }
+        List<ArrayList<Integer>> list = new ArrayList<>(g+1);
+        for(int i = 0; i < g+1; i++) {
+            list.add(new ArrayList<>());
         }
 
-        while (!queue.isEmpty()) {
-            Node node = queue.poll();
-            int x = node.x;
-            int y = node.y;
-            int sum = node.sum;
-
-            if (x >= m || y >= n || x < 0 || y < 0) {
-                continue;
+        for(int i = 1; i < list.size(); i++) {
+            for(int j = 1; j <= i; j++) {
+                list.get(i).add(j);
             }
-            if (graph[x][y] == 'G') {
-                min = Math.min(min, sum);
+            Collections.sort(list.get(i), Comparator.reverseOrder());
+        }
+
+        for(int i = 0; i < order.length; i++) {
+            int plane = order[i];
+            boolean success = false;
+            for(int j = 0; j < list.get(plane).size(); j++) {
+                if(!occupied[list.get(plane).get(j)]) {
+                    occupied[list.get(plane).get(j)] = true;
+                    success = true;
+                    break;
+                }
+            }
+            if(!success) {
                 break;
             }
-            if(visited[x][y]) {
-                continue;
-            }
-            visited[x][y] = true;
-
-            for (int i = 0; i < 4; i++) {
-                go(x, y, sum + 1, i);
-            }
         }
-        if (min == Integer.MAX_VALUE) {
-            return -1;
-        } else {
-            return min;
+        int count = 0;
+        for(boolean value : occupied) {
+            if(value) count++;
         }
-    }
-
-    public void go(int x, int y, int sum, int index) {
-        if (index == 0) {
-            for (int i = x + 1; i < m; i++) {
-                if (graph[i][y] == 'D') {
-                    queue.add(new Node(i - 1, y, sum));
-                    break;
-                }
-                if(i == m-1) {
-                    queue.add(new Node(i, y, sum));
-                }
-            }
-        }
-        if (index == 1) {
-            for (int i = x - 1; i >= 0; i--) {
-                if (graph[i][y] == 'D') {
-                    queue.add(new Node(i + 1, y, sum));
-                    break;
-                }
-                if(i == 0) {
-                    queue.add(new Node(0, y, sum));
-                }
-            }
-        }
-        if (index == 2) {
-            for (int i = y + 1; i < n; i++) {
-                if (graph[x][i] == 'D') {
-                    queue.add(new Node(x, i - 1, sum));
-                    break;
-                }
-                if(i == n-1) {
-                    queue.add(new Node(x, n - 1, sum));
-                }
-            }
-        }
-        if (index == 3) {
-            for (int i = y - 1; i >= 0; i--) {
-                if (graph[x][i] == 'D') {
-                    queue.add(new Node(x, i + 1, sum));
-                    break;
-                }
-                if(i == 0) {
-                    queue.add(new Node(x, 0, sum));
-                }
-            }
-        }
-    }
-
-    public char[][] getBoard(String[] board) {
-        m = board.length;
-        n = board[0].length();
-        char[][] graph = new char[m][n];
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                graph[i][j] = board[i].charAt(j);
-            }
-        }
-        return graph;
-    }
-
-
-    class Node {
-        int x;
-        int y;
-        int sum;
-
-        Node(int x, int y, int sum) {
-            this.x = x;
-            this.y = y;
-            this.sum = sum;
-        }
-
+        System.out.println(count);
     }
 }
