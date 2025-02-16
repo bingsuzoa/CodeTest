@@ -2,46 +2,50 @@ import java.io.*;
 import java.util.*;
 
 public class Solution {
+    static int[] graph;
 
     public static void main(String[] args) throws IOException {
+        Solution test = new Solution();
         Scanner sc = new Scanner(System.in);
         int g = sc.nextInt();
-        boolean[] occupied = new boolean[g+1];
         int p = sc.nextInt();
         int[] order = new int[p];
         for(int i = 0; i < order.length; i++) {
             order[i] = sc.nextInt();
         }
-        List<ArrayList<Integer>> list = new ArrayList<>(g+1);
+
+        graph = new int[g+1];
         for(int i = 0; i < g+1; i++) {
-            list.add(new ArrayList<>());
+            graph[i] = i;
         }
 
-        for(int i = 1; i < list.size(); i++) {
-            for(int j = 1; j <= i; j++) {
-                list.get(i).add(j);
-            }
-            Collections.sort(list.get(i), Comparator.reverseOrder());
-        }
-
+        int count = 0;
         for(int i = 0; i < order.length; i++) {
             int plane = order[i];
-            boolean success = false;
-            for(int j = 0; j < list.get(plane).size(); j++) {
-                if(!occupied[list.get(plane).get(j)]) {
-                    occupied[list.get(plane).get(j)] = true;
-                    success = true;
-                    break;
-                }
-            }
-            if(!success) {
+            if(test.find(graph, plane) == 0) {
                 break;
             }
-        }
-        int count = 0;
-        for(boolean value : occupied) {
-            if(value) count++;
+            plane = test.find(graph, plane);
+            graph = test.union(graph, plane-1, plane);
+            count++;
+
         }
         System.out.println(count);
+    }
+
+    public int find(int[] graph, int plane) {
+        if(graph[plane] != plane) {
+            return find(graph, graph[plane]);
+        }
+        return graph[plane];
+    }
+
+    public int[] union(int[] graph, int left, int right) {
+        if(left < right) {
+            graph[right] = left;
+        } else {
+            graph[left] = right;
+        }
+        return graph;
     }
 }
