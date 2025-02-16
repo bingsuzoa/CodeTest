@@ -2,50 +2,59 @@ import java.io.*;
 import java.util.*;
 
 public class Solution {
-    static int[] graph;
 
     public static void main(String[] args) throws IOException {
-        Solution test = new Solution();
-        Scanner sc = new Scanner(System.in);
-        int g = sc.nextInt();
-        int p = sc.nextInt();
-        int[] order = new int[p];
-        for(int i = 0; i < order.length; i++) {
-            order[i] = sc.nextInt();
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+        StringTokenizer st;
+
+        int n = Integer.parseInt(br.readLine());
+        int[] result = new int[n+1];
+        int[] time = new int[n+1];
+        List<ArrayList<Integer>> list = new ArrayList<>(n+1);
+        int[] order = new int[n+1];
+
+        for(int i = 0; i < n+1; i++) {
+            list.add(new ArrayList<>());
         }
 
-        graph = new int[g+1];
-        for(int i = 0; i < g+1; i++) {
-            graph[i] = i;
-        }
-
-        int count = 0;
-        for(int i = 0; i < order.length; i++) {
-            int plane = order[i];
-            if(test.find(graph, plane) == 0) {
-                break;
+        Queue<Integer> queue =  new LinkedList<>();
+        for(int i = 1; i <= n; i++) {
+            String input = br.readLine();
+            st = new StringTokenizer(input);
+            time[i] = Integer.parseInt(st.nextToken());
+            while(st.hasMoreTokens()) {
+                int value = Integer.parseInt(st.nextToken());
+                if(value == -1) {
+                    continue;
+                }
+                list.get(value).add(i);
+                order[i] ++;
             }
-            plane = test.find(graph, plane);
-            graph = test.union(graph, plane-1, plane);
-            count++;
-
         }
-        System.out.println(count);
-    }
 
-    public int find(int[] graph, int plane) {
-        if(graph[plane] != plane) {
-            return find(graph, graph[plane]);
+        for(int i = 1; i < order.length; i++) {
+            if(order[i] == 0) {
+                result[i] = time[i];
+                queue.add(i);
+            }
         }
-        return graph[plane];
-    }
 
-    public int[] union(int[] graph, int left, int right) {
-        if(left < right) {
-            graph[right] = left;
-        } else {
-            graph[left] = right;
+        while(!queue.isEmpty()) {
+            int now = queue.poll();
+            int now_time = result[now];
+
+            for(int i = 0; i < list.get(now).size(); i++) {
+                order[list.get(now).get(i)]--;
+                result[list.get(now).get(i)] = Math.max(result[list.get(now).get(i)], now_time + time[list.get(now).get(i)]);
+                if(order[list.get(now).get(i)] == 0) {
+                    queue.add(list.get(now).get(i));
+                }
+            }
         }
-        return graph;
+        for(int i = 1; i < result.length; i++) {
+            System.out.println(result[i]);
+        }
+
     }
 }
