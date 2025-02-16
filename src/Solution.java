@@ -2,73 +2,129 @@ import java.io.*;
 import java.util.*;
 
 public class Solution {
+    static int m, n;
+    static char[][] graph;
+    static boolean[][] visited;
+    static int min = Integer.MAX_VALUE;
+    static Queue<Node> queue = new LinkedList<>();
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-        StringTokenizer st;
+    public static void main(String[] args) {
+        String[] board = {"...D..R", ".D.G...", "....D.D", "D....D.", "..D...."};
+        Solution test = new Solution();
+        System.out.println(test.solution(board));
+    }
 
-        int n = Integer.parseInt(br.readLine());
-        List<Subject> graph = new ArrayList<>();
-        int[] time = new int[n+1];
-        int[] order = new int[n+1];
-        int[] answer = new int[n+1];
-        Queue<Subject> queue = new LinkedList<>();
+    public int solution(String[] board) {
+        graph = getBoard(board);
+        visited = new boolean[m][n];
 
-        for(int i = 1; i <= n; i++) {
-            String input = br.readLine();
-            st = new StringTokenizer(input);
-            time[i] = Integer.parseInt(st.nextToken());
-            while(st.hasMoreTokens()) {
-                int before_subject = Integer.parseInt(st.nextToken());
-                if(before_subject == -1) {
-                    continue;
-                }
-                order[i] ++;
-                graph.add(new Subject(i, before_subject));
-            }
-        }
-
-        for(int i = 1; i < order.length; i++) {
-            if(order[i] == 0) {
-                queue.add(new Subject(i, 0));
-            }
-        }
-
-        while(!queue.isEmpty()) {
-            Subject sub = queue.poll();
-            int now_sub = sub.now;
-            int before_sub = sub.before;
-
-            answer[now_sub] += (time[now_sub] + time[before_sub]);
-            
-            for(int i = 0; i < graph.size(); i++) {
-                Subject subject = graph.get(i);
-                int now = subject.now;
-                int before = subject.before;
-                if(before == now_sub) {
-                    order[now] --;
-                    if(order[now] == 0) {
-                        queue.add(new Subject(now, before));
-                    }
+        for(int i = 0; i < board.length; i++) {
+            for(int j = 0; j < board[i].length(); j++) {
+                if(board[i].charAt(j) == 'R') {
+                    queue.add(new Node(i, j, 0));
                 }
             }
         }
-        bw.flush();
-        bw.close();
-    }
-}
-class Subject implements Comparable<Subject> {
-    int now;
-    int before;
 
-    Subject(int now, int before) {
-        this.now = now;
-        this.before = before;
+        while (!queue.isEmpty()) {
+            Node node = queue.poll();
+            int x = node.x;
+            int y = node.y;
+            int sum = node.sum;
+
+            if (x >= m || y >= n || x < 0 || y < 0) {
+                continue;
+            }
+            if (graph[x][y] == 'G') {
+                min = Math.min(min, sum);
+                break;
+            }
+            if(visited[x][y]) {
+                continue;
+            }
+            visited[x][y] = true;
+
+            for (int i = 0; i < 4; i++) {
+                go(x, y, sum + 1, i);
+            }
+        }
+        if (min == Integer.MAX_VALUE) {
+            return -1;
+        } else {
+            return min;
+        }
     }
 
-    @Override
-    public int compareTo(Subject other) {
-        return this.before - other.before;
+    public void go(int x, int y, int sum, int index) {
+        if (index == 0) {
+            for (int i = x + 1; i < m; i++) {
+                if (graph[i][y] == 'D') {
+                    queue.add(new Node(i - 1, y, sum));
+                    break;
+                }
+                if(i == m-1) {
+                    queue.add(new Node(i, y, sum));
+                }
+            }
+        }
+        if (index == 1) {
+            for (int i = x - 1; i >= 0; i--) {
+                if (graph[i][y] == 'D') {
+                    queue.add(new Node(i + 1, y, sum));
+                    break;
+                }
+                if(i == 0) {
+                    queue.add(new Node(0, y, sum));
+                }
+            }
+        }
+        if (index == 2) {
+            for (int i = y + 1; i < n; i++) {
+                if (graph[x][i] == 'D') {
+                    queue.add(new Node(x, i - 1, sum));
+                    break;
+                }
+                if(i == n-1) {
+                    queue.add(new Node(x, n - 1, sum));
+                }
+            }
+        }
+        if (index == 3) {
+            for (int i = y - 1; i >= 0; i--) {
+                if (graph[x][i] == 'D') {
+                    queue.add(new Node(x, i + 1, sum));
+                    break;
+                }
+                if(i == 0) {
+                    queue.add(new Node(x, 0, sum));
+                }
+            }
+        }
+    }
+
+    public char[][] getBoard(String[] board) {
+        m = board.length;
+        n = board[0].length();
+        char[][] graph = new char[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                graph[i][j] = board[i].charAt(j);
+            }
+        }
+        return graph;
+    }
+
+
+    class Node {
+        int x;
+        int y;
+        int sum;
+
+        Node(int x, int y, int sum) {
+            this.x = x;
+            this.y = y;
+            this.sum = sum;
+        }
+
     }
 }
