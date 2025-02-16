@@ -1,86 +1,74 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
 
 public class Solution {
-    static int[] graph;
 
     public static void main(String[] args) throws IOException {
-         Solution test = new Solution();
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st;
 
-        String input = br.readLine();
-        st = new StringTokenizer(input);
-        int n = Integer.parseInt(st.nextToken());
-        int m = Integer.parseInt(st.nextToken());
+        int n = Integer.parseInt(br.readLine());
+        List<Subject> graph = new ArrayList<>();
+        int[] time = new int[n+1];
+        int[] order = new int[n+1];
+        int[] answer = new int[n+1];
+        Queue<Subject> queue = new LinkedList<>();
 
-        PriorityQueue<Node> queue = new PriorityQueue<>();
-        for (int i = 0; i < m; i++) {
-            String input2 = br.readLine();
-            st = new StringTokenizer(input2);
-            int x = Integer.parseInt(st.nextToken());
-            int y = Integer.parseInt(st.nextToken());
-            int cost = Integer.parseInt(st.nextToken());
-            queue.add(new Node(x,y,cost));
-        }
-
-        graph = new int[n+1];
-        for(int i = 1; i < n+1; i++) {
-            graph[i] = i;
-        }
-
-        int sum = 0;
-        int max = 0;
-        Set<Integer> set = new HashSet<>();
-        while(!queue.isEmpty()) {
-            Node node = queue.poll();
-            int x = node.x;
-            int y = node.y;
-            int cost = node.cost;
-            if(test.find(graph, x) == test.find(graph, y)) {
-                continue;
+        for(int i = 1; i <= n; i++) {
+            String input = br.readLine();
+            st = new StringTokenizer(input);
+            time[i] = Integer.parseInt(st.nextToken());
+            while(st.hasMoreTokens()) {
+                int before_subject = Integer.parseInt(st.nextToken());
+                if(before_subject == -1) {
+                    continue;
+                }
+                order[i] ++;
+                graph.add(new Subject(i, before_subject));
             }
-            sum += cost;
-            max = Math.max(max, cost);
-            graph = test.union(graph, x, y);
+        }
 
+        for(int i = 1; i < order.length; i++) {
+            if(order[i] == 0) {
+                queue.add(new Subject(i, 0));
+            }
         }
-        System.out.println(sum - max);
-    }
-    public int[] union(int[] graph, int x, int y) {
-        int nx = find(graph, x);
-        int ny = find(graph, y);
-        if(nx < ny) {
-            graph[ny] = nx;
-        } else {
-            graph[nx] = ny;
-        }
-        return graph;
-    }
 
-    public int find(int[] graph, int x) {
-        if(graph[x] != x) {
-            return graph[x] = find(graph, graph[x]);
+        while(!queue.isEmpty()) {
+            Subject sub = queue.poll();
+            int now_sub = sub.now;
+            int before_sub = sub.before;
+
+            answer[now_sub] += (time[now_sub] + time[before_sub]);
+            
+            for(int i = 0; i < graph.size(); i++) {
+                Subject subject = graph.get(i);
+                int now = subject.now;
+                int before = subject.before;
+                if(before == now_sub) {
+                    order[now] --;
+                    if(order[now] == 0) {
+                        queue.add(new Subject(now, before));
+                    }
+                }
+            }
         }
-        return graph[x];
+        bw.flush();
+        bw.close();
     }
 }
+class Subject implements Comparable<Subject> {
+    int now;
+    int before;
 
-class Node implements Comparable<Node> {
-    int x;
-    int y;
-    int cost;
-
-    Node(int x, int y, int cost) {
-        this.x = x;
-        this.y = y;
-        this.cost = cost;
+    Subject(int now, int before) {
+        this.now = now;
+        this.before = before;
     }
 
     @Override
-    public int compareTo(Node other) {
-        return this.cost - other.cost;
+    public int compareTo(Subject other) {
+        return this.before - other.before;
     }
 }
