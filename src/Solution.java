@@ -10,35 +10,20 @@ public class Solution {
 
         String input = sc.nextLine();
         st = new StringTokenizer(input);
-        int m = Integer.parseInt(st.nextToken());
         int n = Integer.parseInt(st.nextToken());
+        int k = Integer.parseInt(st.nextToken());
 
-        int[][] graph = new int[m][n];
-        for(int i = 0; i < m; i++) {
-            String input2 = sc.nextLine();
-            st = new StringTokenizer(input2);
-            while(st.hasMoreTokens()) {
-                for(int j = 0; j < n; j++) {
-                    graph[i][j] = Integer.parseInt(st.nextToken());
-                }
+        int count = 0;
+        while(true) {
+            int target = (n / k) * k;
+            count += (n - target);
+            n = target;
+            if(n < k) {
+                break;
             }
+            n /= k;
+            count++;
         }
-
-        int[] minArr = new int[m];
-        for(int i = 0; i < minArr.length; i++) {
-            minArr[i] = Integer.MAX_VALUE;
-        }
-        for(int i = 0; i < graph.length; i++) {
-            for(int j = 0; j  <graph[i].length; j++) {
-                minArr[i] = Math.min(minArr[i], graph[i][j]);
-            }
-        }
-
-        int result = 0;
-        for(int i = 0; i < minArr.length; i++) {
-            result = Math.max(result, minArr[i]);
-        }
-        System.out.println(result);
+        System.out.println(count - 1);
     }
-
 }
