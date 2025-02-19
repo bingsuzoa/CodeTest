@@ -1,59 +1,78 @@
-
+import java.util.*;
 
 public class Solution {
-    static int max_m;
-    static int max_n;
-    static int min = Integer.MAX_VALUE;
+    static boolean answer = false;
+    static int m, n;
 
-    public int[] solution(int m, int n, int startX, int startY, int[][] balls) {
-        max_m = m;
-        max_n = n;
-        int[] answer = new int[balls.length];
+    public static void main(String[] args) {
+        int[][] key = {{0, 0, 0}, {1, 0, 0}, {0, 1, 1}};
+        int[][] lock = {{1, 1, 1}, {1, 1, 0}, {1, 0, 1}};
+        Solution test = new Solution();
+        System.out.println(test.solution(key, lock));
+    }
 
-        for (int i = 0; i < balls.length; i++) {
-            min = Integer.MAX_VALUE;
-            min = Math.min(min, measure(startX, startY, balls[i][0], balls[i][1], "LEFT"));
-            min = Math.min(min, measure(startX, startY, balls[i][0], balls[i][1], "RIGHT"));
-            min = Math.min(min, measure(startX, startY, balls[i][0], balls[i][1], "UP"));
-            min = Math.min(min, measure(startX, startY, balls[i][0], balls[i][1], "BOTTOM"));
-            answer[i] = min;
+    public boolean solution(int[][] key, int[][] lock) {
+        m = key.length;
+        n = lock.length;
+
+        int[][] key_90 = rotate(key);
+        int[][] key_180 = rotate(key_90);
+        int[][] key_270 = rotate(key_180);
+        List<int[][]> keyList = new ArrayList<>(4);
+        keyList.add(key);
+        keyList.add(key_90);
+        keyList.add(key_180);
+        keyList.add(key_270);
+
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int[][] nowKey : keyList) {
+                    if (move_rightDown(nowKey, lock, i, j)) {
+                        answer = true;
+                        break;
+                    }
+                    if (move_leftUp(nowKey, lock, i, j)) {
+                        answer = true;
+                        break;
+                    }
+                }
+            }
         }
         return answer;
     }
 
-    public int measure(int sx, int sy, int x, int y, String direction) {
-        if (direction.equals("LEFT")) {
-            if (y == sy && x < sx) {
-                return Integer.MAX_VALUE;
+    public boolean move_rightDown(int[][] key, int[][] lock, int lock_x, int lock_y) {
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < m; j++) {
+                if (j + lock_y >= n || i + lock_x >= n) continue;
+                if (lock[i + lock_x][j + lock_y] == 0 && key[i][j] == 0) return false;
+                if (lock[i + lock_x][j + lock_y] == 1 && key[i][j] == 0) return false;
             }
-            sx = -sx;
-            int result = (x - sx) * (x - sx) + (y - sy) * (y - sy);
-            return result;
         }
-        if (direction.equals("RIGHT")) {
-            if (y == sy && sx < x) {
-                return Integer.MAX_VALUE;
-            }
-            sx = 2 * max_m - sx;
-            int result = (x - sx) * (x - sx) + (y - sy) * (y - sy);
-            return result;
-        }
-        if (direction.equals("UP")) {
-            if (x == sx && sy < y) {
-                return Integer.MAX_VALUE;
-            }
-            sy = 2 * max_n - sy;
-            int result = (x - sx) * (x - sx) + (y - sy) * (y - sy);
-            return result;
-        }
-        if (direction.equals("BOTTOM")) {
-            if (x == sx && sy > y) {
-                return Integer.MAX_VALUE;
-            }
-            sy = -sy;
-            int result = (x - sx) * (x - sx) + (y - sy) * (y - sy);
-            return result;
-        }
-        return 0;
+        return true;
     }
+
+    public boolean move_leftUp(int[][] key, int[][] lock, int lock_x, int lock_y) {
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = m - 1; j >= 0; j--) {
+                if (i - lock_x < 0 || j - lock_y < 0) continue;
+                if (lock[i - lock_x][j - lock_y] == 0 && key[i][j] == 0) return false;
+                if (lock[i - lock_x][j - lock_y] == 1 && key[i][j] == 0) return false;
+            }
+        }
+        return true;
+    }
+
+    public int[][] rotate(int[][] key) {
+        int m = key.length;
+        int[][] newKey = new int[m][m];
+        for (int i = 0; i < m; i++) {
+            for (int j = m - 1; j >= 0; j--) {
+                newKey[i][m - 1 - j] = key[j][i];
+            }
+        }
+        return newKey;
+    }
+
 }
