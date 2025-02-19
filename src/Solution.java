@@ -46,8 +46,18 @@ public class Solution {
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < m; j++) {
                 if (j + lock_y >= n || i + lock_x >= n) continue;
-                if (lock[i + lock_x][j + lock_y] == 0 && key[i][j] == 0) return false;
-                if (lock[i + lock_x][j + lock_y] == 1 && key[i][j] == 0) return false;
+                if (lock[i + lock_x][j + lock_y] == 1 && key[i][j] == 1) return false;
+                if(lock[i+lock_x][j + lock_y] == 0) {
+                    if(key[i][j] == 0) {
+                        return false;
+                    }
+                    lock[i+lock_x][j + lock_y] = key[i][j];
+                }
+            }
+        }
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                if(lock[i][j] == 0) return false;
             }
         }
         return true;
@@ -57,8 +67,18 @@ public class Solution {
         for (int i = m - 1; i >= 0; i--) {
             for (int j = m - 1; j >= 0; j--) {
                 if (i - lock_x < 0 || j - lock_y < 0) continue;
-                if (lock[i - lock_x][j - lock_y] == 0 && key[i][j] == 0) return false;
-                if (lock[i - lock_x][j - lock_y] == 1 && key[i][j] == 0) return false;
+                if (lock[i - lock_x][j - lock_y] == 1 && key[i][j] == 1) return false;
+                if (lock[i - lock_x][j - lock_y] == 0) {
+                    if(key[i][j] == 0) {
+                        return false;
+                    }
+                    lock[i - lock_x][j - lock_y] = key[i][j];
+                }
+            }
+        }
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                if(lock[i][j] == 0) return false;
             }
         }
         return true;
