@@ -3,10 +3,26 @@ import java.util.*;
 public class Solution {
     static boolean answer = false;
     static int m, n;
+    static int count;
+
+    public static void main(String[] args) {
+        int[][] key = {{1,1},{1,1}};
+        int[][] lock = {{0,0,0},{0,0,0},{0,0,0}};
+        Solution test = new Solution();
+        System.out.println(test.solution(key, lock));
+    }
 
     public boolean solution(int[][] key, int[][] lock) {
         m = key.length;
         n = lock.length;
+
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                if(lock[i][j] == 0) {
+                    count++;
+                }
+            }
+        }
 
         int[][] key_90 = rotate(key);
         int[][] key_180 = rotate(key_90);
@@ -43,6 +59,7 @@ public class Solution {
     }
 
     public boolean move_fromLU(int[][] key, int[][] lock, int lock_x, int lock_y) {
+        int homeCount = 0;
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < m; j++) {
                 if (j + lock_y >= n || i + lock_x >= n) continue;
@@ -51,19 +68,18 @@ public class Solution {
                     if (key[i][j] == 0) {
                         return false;
                     }
-                    lock[i + lock_x][j + lock_y] = key[i][j];
+                    homeCount++;
                 }
             }
         }
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (lock[i][j] == 0) return false;
-            }
+        if(homeCount == count) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     public boolean move_fromRU(int[][] key, int[][] lock, int lock_x, int lock_y) {
+        int homeCount = 0;
         for (int i = 0; i < m; i++) {
             for (int j = m - 1; j >= 0; j--) {
                 if (j - m + 1 < 0 || j - m + 1 + lock_y >= n || i + lock_x >= n) continue;
@@ -72,19 +88,18 @@ public class Solution {
                     if (key[i][j] == 0) {
                         return false;
                     }
-                    lock[i + lock_x][j - m + 1 + lock_y] = key[i][j];
+                    homeCount++;
                 }
             }
         }
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (lock[i][j] == 0) return false;
-            }
+        if(homeCount == count) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     public boolean move_fromRD(int[][] key, int[][] lock, int lock_x, int lock_y) {
+        int homeCount = 0;
         for (int i = m - 1; i >= 0; i--) {
             for (int j = m - 1; j >= 0; j--) {
                 if (i - lock_x < 0 || j - lock_y < 0) continue;
@@ -93,19 +108,18 @@ public class Solution {
                     if (key[i][j] == 0) {
                         return false;
                     }
-                    lock[i - lock_x][j - lock_y] = key[i][j];
+                    homeCount++;
                 }
             }
         }
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (lock[i][j] == 0) return false;
-            }
+        if(homeCount == count) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     public boolean move_fromLD(int[][] key, int[][] lock, int lock_x, int lock_y) {
+        int homeCount = 0;
         for (int i = m - 1; i >= 0; i--) {
             for (int j = 0; j < m; j++) {
                 if (j - m + 1 < 0 || j - m + 1 + lock_x >= n || j + lock_y >= n) continue;
@@ -114,16 +128,14 @@ public class Solution {
                     if (key[i][j] == 0) {
                         return false;
                     }
-                    lock[j - m + 1 + lock_x][j + lock_y] = key[i][j];
+                    homeCount++;
                 }
             }
         }
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (lock[i][j] == 0) return false;
-            }
+        if(homeCount == count) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     public int[][] rotate(int[][] key) {
