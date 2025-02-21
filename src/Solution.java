@@ -1,191 +1,79 @@
 
+import java.io.*;
 import java.util.*;
 
 public class Solution {
-    static boolean answer = false;
-    static int m, n;
-    static List<int[]> list;
-    static Queue<int[]> queue;
+    static PriorityQueue<int[]> queue;
+    static int[] dx = {1, -1, 0, 0};
+    static int[] dy = {0, 0, 1, -1};
+    static int s;
 
-    public static void main(String[] args) {
-        int[][] key = {{1, 1}, {1, 1}};
-        int[][] lock = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+    public static void main(String[] args) throws IOException {
         Solution test = new Solution();
-        System.out.println(test.solution(key, lock));
-    }
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+        StringTokenizer st;
 
-    public boolean solution(int[][] key, int[][] lock) {
-        m = key.length;
-        n = lock.length;
+        String input = br.readLine();
+        st = new StringTokenizer(input);
+        int n = Integer.parseInt(st.nextToken());
+        int k = Integer.parseInt(st.nextToken());
+        int[][] graph = new int[n][n];
 
-        list = new ArrayList<>();
+        queue = new PriorityQueue<>((a, b) -> {
+            if(a[3] == b[3]) return a[2] - b[2];
+            return a[3] - b[3];
+        });
+
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (lock[i][j] == 0) {
-                    list.add(new int[]{i, j});
+            String input2 = br.readLine();
+            st = new StringTokenizer(input2);
+            while (st.hasMoreTokens()) {
+                for (int j = 0; j < n; j++) {
+                    int number = Integer.parseInt(st.nextToken());
+                    graph[i][j] = number;
+                    if (number > 0) {
+                        queue.add(new int[]{i, j, number, 0});
+                    }
                 }
             }
         }
 
-        int[][] key_90 = rotate(key);
-        int[][] key_180 = rotate(key_90);
-        int[][] key_270 = rotate(key_180);
-        List<int[][]> keyList = new ArrayList<>(4);
-        keyList.add(key);
-        keyList.add(key_90);
-        keyList.add(key_180);
-        keyList.add(key_270);
+        String input3 = br.readLine();
+        st = new StringTokenizer(input3);
+        s = Integer.parseInt(st.nextToken());
+        int a_x = Integer.parseInt(st.nextToken());
+        int a_y = Integer.parseInt(st.nextToken());
 
-        queue = new LinkedList<>();
-        for (int i = 0; i < keyList.size(); i++) {
-            for (int j = m - 1; j >= 0; j--) {
-                if (move(keyList.get(i), lock)) {
-                    answer = true;
-                    break;
-                }
-            }
-        }
-        return answer;
-
-    }
-    public boolean move(int[][] key, int[][] lock) {
-        queue.add(new int[]{m - 1, m - 1, 0, 0});
-        while(!queue.isEmpty()) {
+        while (!queue.isEmpty()) {
             int[] arr = queue.poll();
-            int key_x = arr[0];
-            int key_y = arr[1];
-            int lock_x = arr[2];
-            int lock_y = arr[3];
+            int x = arr[0];
+            int y = arr[1];
+            int virus = arr[2];
+            int time = arr[3];
 
-            if(lock_y >= n) {
-                key_x --;
-                key_y = m-1;
-                lock_x = 0;
-                lock_y = 0;
-            }
-
-            if(key_x <= -n) {
+            if (x >= n || y >= n || x < 0 || y < 0) {
                 continue;
             }
 
-            if(key_x >= 0) {
-                List<int[]> result = move_key_x_Positive(key, lock, key_x, key_y, lock_x, lock_y);
-                if(judge(result)) {
-                    answer = true;
-                    break;
-                }
-            }
-            List<int[]> result = move_key_x_negative(key, lock, key_x, key_y, lock_x, lock_y);
-            if(judge(result)) {
-                answer = true;
-                break;
+            if (time != 0 && graph[x][y] > 0) {
+                continue;
             }
 
+            graph[x][y] = virus;
+            if(time < s) {
+                test.move(x, y, virus, time);
+            }
         }
-        return answer;
+
+        bw.write(graph[a_x - 1][a_y - 1] + "");
+        bw.close();
     }
 
-    public List<int[]> move_key_x_negative(int[][] key, int[][] lock, int key_x, int key_y, int lock_x, int lock_y) {
-        List<int[]> matchCount = new ArrayList<>();
-        if(key_y > 0) {
-            int count = 0;
-            for (int i = -key_x; i < m; i++) {
-                for (int j = key_y; j < m; j++) {
-                    if (lock[i][count] == 1 && key[i][j] == 1
-                            || lock[i][count] == 0 && key[i][j] == 0) {
-                        queue.add(new int[]{key_x, key_y - 1, lock_x, lock_y});
-                        break;
-                    }
-                    if (lock[i][count] == 0) {
-                        matchCount.add(new int[]{i, count});
-                    }
-                }
-            }
-        } else {
-            for (int i = -key_x; i < m; i++) {
-                for (int j = key_y; j < m; j++) {
-                    if (lock_y + j >= n) {
-                        continue;
-                    }
-                    if (lock[i][lock_y + j] == 1 && key[i][j] == 1
-                            || lock[i][lock_y + j] == 0 && key[i][j] == 0) {
-                        queue.add(new int[]{key_x, key_y, lock_x, lock_y + 1});
-                    }
-                    if (lock[i][lock_y + j] == 0) {
-                        matchCount.add(new int[]{i, lock_y + j});
-                    }
-                }
-            }
+    public void move(int x, int y, int virus, int time) {
+        for(int i = 0; i < 4; i++) {
+            queue.add(new int[]{x + dx[i], y + dy[i], virus, time + 1});
         }
-        return matchCount;
-    }
 
-    public List<int[]> move_key_x_Positive(int[][] key, int[][] lock, int key_x, int key_y, int lock_x, int lock_y) {
-        List<int[]> matchCount = new ArrayList<>();
-
-        if(key_y > 0) {
-            int count = 0;
-            for (int i = key_x; i < m; i++) {
-                for (int j = key_y; j < m; j++) {
-                    if (lock[i - key_x][count] == 1 && key[i][j] == 1
-                            || lock[i - key_x][count] == 0 && key[i][j] == 0) {
-                        queue.add(new int[]{key_x, key_y - 1, lock_x, lock_y});
-                        return matchCount;
-                    }
-                    if (lock[i - key_x][count] == 0) {
-                        matchCount.add(new int[]{i - key_x, count});
-                    }
-                }
-            }
-        } else {
-            for (int i = key_x; i < m; i++) {
-                for (int j = key_y; j < m; j++) {
-                    if (lock_y + j >= n) {
-                        continue;
-                    }
-                    if (lock[i - key_x][lock_y + j] == 1 && key[i][j] == 1
-                            || lock[i - key_x][lock_y + j] == 0 && key[i][j] == 0) {
-                        queue.add(new int[]{key_x, key_y, lock_x, lock_y + 1});
-                        return matchCount;
-                    }
-                    if (lock[i - key_x][lock_y + j] == 0) {
-                        matchCount.add(new int[]{i - key_x, lock_y + j});
-                    }
-                }
-            }
-        }
-        return matchCount;
-    }
-
-    public boolean judge(List<int[]> result) {
-        if(result.isEmpty()) {
-            return false;
-        }
-        if(list.size() != result.size()) {
-            return false;
-        }
-        int count = 0;
-        for(int i = 0; i < list.size(); i++) {
-            for(int j = 0; j < result.size(); j++) {
-                if(list.get(i)[0] == result.get(j)[0] && list.get(i)[1] == result.get(j)[1]) {
-                    count++;
-                    break;
-                }
-            }
-        }
-        if(count == list.size()) {
-            return true;
-        }
-        return false;
-    }
-
-    public int[][] rotate(int[][] key) {
-        int[][] newKey = new int[m][m];
-        for (int i = 0; i < m; i++) {
-            for (int j = m - 1; j >= 0; j--) {
-                newKey[i][m - 1 - j] = key[j][i];
-            }
-        }
-        return newKey;
     }
 }
