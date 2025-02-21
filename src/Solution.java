@@ -5,6 +5,7 @@ public class Solution {
     static boolean answer = false;
     static int m, n;
     static List<int[]> list;
+    static Queue<int[]> queue;
 
     public static void main(String[] args) {
         int[][] key = {{1, 1}, {1, 1}};
@@ -35,57 +36,146 @@ public class Solution {
         keyList.add(key_180);
         keyList.add(key_270);
 
-        for(int i = 0; i < keyList.size(); i++) {
-            for(int j = m-1; j >= 0; j--) {
-                if(move(keyList.get(i), lock, j, m-1, 0,0)) {
+        queue = new LinkedList<>();
+        for (int i = 0; i < keyList.size(); i++) {
+            for (int j = m - 1; j >= 0; j--) {
+                if (move(keyList.get(i), lock)) {
                     answer = true;
                     break;
                 }
             }
         }
         return answer;
+
+    }
+    public boolean move(int[][] key, int[][] lock) {
+        queue.add(new int[]{m - 1, m - 1, 0, 0});
+        while(!queue.isEmpty()) {
+            int[] arr = queue.poll();
+            int key_x = arr[0];
+            int key_y = arr[1];
+            int lock_x = arr[2];
+            int lock_y = arr[3];
+
+            if(lock_y >= n) {
+                key_x --;
+                key_y = m-1;
+                lock_x = 0;
+                lock_y = 0;
+            }
+
+            if(key_x <= -n) {
+                continue;
+            }
+
+            if(key_x >= 0) {
+                List<int[]> result = move_key_x_Positive(key, lock, key_x, key_y, lock_x, lock_y);
+                if(judge(result)) {
+                    answer = true;
+                    break;
+                }
+            }
+            List<int[]> result = move_key_x_negative(key, lock, key_x, key_y, lock_x, lock_y);
+            if(judge(result)) {
+                answer = true;
+                break;
+            }
+
+        }
+        return answer;
     }
 
-    public boolean move(int[][] key, int[][] lock, int key_x, int key_y, int lock_x, int lock_y) {
-        int matchCount = 0;
-
-        if(key_y < 0 || lock_y >= n) {
-            return false;
+    public List<int[]> move_key_x_negative(int[][] key, int[][] lock, int key_x, int key_y, int lock_x, int lock_y) {
+        List<int[]> matchCount = new ArrayList<>();
+        if(key_y > 0) {
+            int count = 0;
+            for (int i = -key_x; i < m; i++) {
+                for (int j = key_y; j < m; j++) {
+                    if (lock[i][count] == 1 && key[i][j] == 1
+                            || lock[i][count] == 0 && key[i][j] == 0) {
+                        queue.add(new int[]{key_x, key_y - 1, lock_x, lock_y});
+                        break;
+                    }
+                    if (lock[i][count] == 0) {
+                        matchCount.add(new int[]{i, count});
+                    }
+                }
+            }
+        } else {
+            for (int i = -key_x; i < m; i++) {
+                for (int j = key_y; j < m; j++) {
+                    if (lock_y + j >= n) {
+                        continue;
+                    }
+                    if (lock[i][lock_y + j] == 1 && key[i][j] == 1
+                            || lock[i][lock_y + j] == 0 && key[i][j] == 0) {
+                        queue.add(new int[]{key_x, key_y, lock_x, lock_y + 1});
+                    }
+                    if (lock[i][lock_y + j] == 0) {
+                        matchCount.add(new int[]{i, lock_y + j});
+                    }
+                }
+            }
         }
+        return matchCount;
+    }
 
-        if (key_y > 0) {
+    public List<int[]> move_key_x_Positive(int[][] key, int[][] lock, int key_x, int key_y, int lock_x, int lock_y) {
+        List<int[]> matchCount = new ArrayList<>();
+
+        if(key_y > 0) {
             int count = 0;
             for (int i = key_x; i < m; i++) {
                 for (int j = key_y; j < m; j++) {
-                    if (lock[m - 1 - i][count] == 1 && key[i][j] == 1
-                            || lock[m - 1 - i][count] == 0 && key[i][j] == 0) {
-                        move(key, lock, key_x, key_y - 1, lock_x, lock_y);
+                    if (lock[i - key_x][count] == 1 && key[i][j] == 1
+                            || lock[i - key_x][count] == 0 && key[i][j] == 0) {
+                        queue.add(new int[]{key_x, key_y - 1, lock_x, lock_y});
+                        return matchCount;
                     }
-                    if (lock[m - 1 - i][count] == 0) {
-                        for(int k = 0; k < list.size(); k++) {
-                            int[] arr = list.get(k);
-                            if(m-1-i == arr[0] && count == arr[1]) {
-                                count++;
-                                matchCount++;
-                            }
-                        }
+                    if (lock[i - key_x][count] == 0) {
+                        matchCount.add(new int[]{i - key_x, count});
+                    }
+                }
+            }
+        } else {
+            for (int i = key_x; i < m; i++) {
+                for (int j = key_y; j < m; j++) {
+                    if (lock_y + j >= n) {
+                        continue;
+                    }
+                    if (lock[i - key_x][lock_y + j] == 1 && key[i][j] == 1
+                            || lock[i - key_x][lock_y + j] == 0 && key[i][j] == 0) {
+                        queue.add(new int[]{key_x, key_y, lock_x, lock_y + 1});
+                        return matchCount;
+                    }
+                    if (lock[i - key_x][lock_y + j] == 0) {
+                        matchCount.add(new int[]{i - key_x, lock_y + j});
                     }
                 }
             }
         }
-        else {
-            int twoCount = 0;
-            for(int i = key_x; i < m; i++) {
-                for(int j = key_y; j < m; j++) {
-                    if (lock[m - 1 - i][lock_y + twoCount] == 1 && key[i][j] == 1
-                            || lock[m - 1 - i][lock_y + twoCount] == 0 && key[i][j] == 0) {
-                        move(key, lock, key_x, key_y, lock_x, lock_y + 1);
-                    }
-                }
-            }
-        }
+        return matchCount;
+    }
 
-        if(matchCount == list.size()) return true;
+    public boolean judge(List<int[]> result) {
+        if(result.isEmpty()) {
+            return false;
+        }
+        if(list.size() != result.size()) {
+            return false;
+        }
+        int count = 0;
+        for(int i = 0; i < list.size(); i++) {
+            for(int j = 0; j < result.size(); j++) {
+                if(list.get(i)[0] == result.get(j)[0] && list.get(i)[1] == result.get(j)[1]) {
+                    count++;
+                    break;
+                }
+            }
+        }
+        if(count == list.size()) {
+            return true;
+        }
         return false;
     }
 
